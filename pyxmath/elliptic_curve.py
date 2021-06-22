@@ -6,6 +6,9 @@ class PT():
         self.x = x
         self.y = y
 
+    def __repr__(self):
+        return repr([self.x, self.y])
+
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             return self.x == other.x and self.y == other.y
@@ -65,10 +68,10 @@ class EC:
 
 def find_points(ec, p):
     ps = []
-    ps.append([0, 0])
+    ps.append(None)
     for i in range(p):
         r = modular_sqrt(ec.find_y_square(i), p)
-        if r is not 0:
+        if r != 0:
             ps.append([i, r])
             ps.append([i, p - r])
     return ps
