@@ -1,4 +1,5 @@
 import pytest
+from pyxmath.number_theory import *
 from pyxmath.finite_mono_polynomial import *
 
 
@@ -39,18 +40,37 @@ def test_inv():
     poly = FiniteMonoPolynomial([1, 2, 0, 1], 3)
     assert poly.inv([1, 0, 1]) == [2, 1, 2]
     assert poly.mul([1, 0, 1], [2, 1, 2]) == [1, 0, 0]
-    assert poly.div([1, 0, 1], [1, 0, 1]) == [1,0,0]
+    assert poly.div([1, 0, 1], [1, 0, 1]) == [1, 0, 0]
 
     poly = FiniteMonoPolynomial([1, 1, 0, 1], 2)
     assert poly.inv([1, 1, 1]) == [0, 0, 1]
     assert poly.mul([1, 1, 1], [0, 0, 1]) == [1, 0, 0]
-    assert poly.div([1, 1, 1], [1, 1, 1]) == [1,0,0]
+    assert poly.div([1, 1, 1], [1, 1, 1]) == [1, 0, 0]
 
     poly = FiniteMonoPolynomial([1, 0, 0, 1, 1], 2)
     assert poly.inv([1, 1, 1, 0]) == [0, 1, 1, 1]
     assert poly.mul([1, 1, 1, 0], [0, 1, 1, 1]) == [1, 0, 0, 0]
     assert poly.div([1, 1, 1, 0], [1, 1, 1, 0]) == [1, 0, 0, 0]
 
-    '''
-    https://math.stackexchange.com/questions/124300/finding-inverse-of-polynomial-in-a-field
-    '''
+    # 5이상인곳에서 inv test
+    poly = FiniteMonoPolynomial([1, 2, 0, 1], 5)
+    assert poly.inv([2, 4, 3]) == [0, 2, 2]
+    assert poly.mul([2, 4, 3], [0, 2, 2]) == [1, 0, 0]
+    assert poly.inv([4, 4, 3]) == [2, 0, 3]
+    assert poly.mul([4, 4, 3], [2, 0, 3]) == [1, 0, 0]
+    # https://math.stackexchange.com/questions/124300/finding-inverse-of-polynomial-in-a-field
+
+    # pow
+    poly = FiniteMonoPolynomial([1, 2, 0, 1], 67)
+    m2 = poly.mul([1, 0, 1], [1, 0, 1])
+    m3 = poly.mul([1, 0, 1], m2)
+    assert poly.pow([1, 0, 1], 3) == m3
+
+    # Frobenius endomorphism
+    poly = FiniteMonoPolynomial([1, 0, 1], 67)
+    assert poly.pow([16, 2], 67 ** 2) == [16, 2]
+    assert frob_end_pi(poly([16, 2]), 67, 2) == [16, 2]
+    assert frob_end_pi(poly([39, 30]), 67, 2) == [39, 30]
+
+    poly = FiniteMonoPolynomial([2, 0, 0, 1], 67)
+    assert frob_end_pi(poly([8, 4, 15]), 67, 3) == [8, 4, 15]
