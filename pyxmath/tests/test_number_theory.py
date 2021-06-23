@@ -36,6 +36,12 @@ def test_field():
     assert -Field(5, 1) == 4
     assert -Field(5, 1) == 4
 
-    #__call__
+    # __call__
     assert -f(1) == 4
     assert -f(1) == 4
+
+
+def test_frob_end_pi():
+    q = 67
+    assert frob_end_pi(15, q, 1) == 15
+    assert frob_end_pi(50, q, 1) == 50
