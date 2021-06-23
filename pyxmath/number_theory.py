@@ -1,5 +1,6 @@
 import sys
 
+
 def xgcd(a, b):
     """
     a * x + b * y = gcd
@@ -102,7 +103,7 @@ class Field():
         return (a * (-1)) % self.p
 
     def __neg__(self):
-        return  self.__class__(self.p, (self.n * (-1)) % self.p)
+        return self.__class__(self.p, (self.n * (-1)) % self.p)
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -111,11 +112,16 @@ class Field():
             return self.n == other
 
 
+# Frobenius endomorphism π
+# https://ko.wikipedia.org/wiki/%ED%94%84%EB%A1%9C%EB%B2%A0%EB%8B%88%EC%9A%B0%EC%8A%A4_%EC%82%AC%EC%83%81
+def frob_end_pi(r, q, exp=1):
+    return r ** (q ** exp) % q
+
+
 # https://gist.github.com/nakov/60d62bdf4067ea72b7832ce9f71ae079
 # Tonelli–Shanks
 # todo study later
 def modular_sqrt(a, p):
-
     def legendre_symbol(a, p):
         """ Compute the Legendre symbol a|p using
             Euler's criterion. p is a prime, a is
