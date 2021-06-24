@@ -3,9 +3,6 @@ from pyxmath import number_theory as nth
 
 
 class FiniteMonoPolynomial():
-    @staticmethod
-    def neg(a):
-        return [x * (-1) for x in a]
 
     def __call__(self, val_coefs):
         return self.__class__(self.coefs, self.p, val_coefs)
@@ -42,6 +39,15 @@ class FiniteMonoPolynomial():
         self._validate(r_a, r_b)
         return [sum(x) % self.p for x in itertools.zip_longest(r_a, r_b, fillvalue=0)]
 
+    def __add__(self, other):
+        if isinstance(other, self.__class__):
+            self._validate(self.val_coefs, other.val_coefs)
+            return self.__class__(self.coefs, self.p, self.add(self.val_coefs, other.val_coefs))
+        else:
+            return self.__class__(self.coefs, self.p, self.add(self.val_coefs, self.int2list(other)))
+
+    __radd__ = __add__
+
     def sub(self, r_a, r_b):
         '''sub
 
@@ -59,6 +65,15 @@ class FiniteMonoPolynomial():
                 bb.append(0)
             aa[i] = (aa[i] - bb[i]) % self.p
         return aa
+
+    def __sub__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__class__(self.coefs, self.p, self.sub(self.val_coefs, other.val_coefs))
+        else:
+            return self.__class__(self.coefs, self.p, self.sub(self.val_coefs, self.int2list(other)))
+
+    def __rsub__(self, other):
+        return self.__class__(self.coefs, self.p, self.sub(self.int2list(other), self.val_coefs))
 
     def mul(self, r_a, r_b):
         '''mul
@@ -78,9 +93,28 @@ class FiniteMonoPolynomial():
             coefs = [sum(x) for x in itertools.zip_longest(over_coefs[0:r_coefs_len], coefs, fillvalue=0)]
         return ([x % self.p for x in coefs])
 
+    def __mul__(self, other):
+        if isinstance(other, self.__class__):
+            self._validate(self.val_coefs, other.val_coefs)
+            return self.__class__(self.coefs, self.p, self.mul(self.val_coefs, other.val_coefs))
+        else:
+            return self.__class__(self.coefs, self.p, self.mul(self.val_coefs, self.int2list(other)))
+
+    __rmul__ = __mul__
+
     def div(self, r_a, r_b):
         self._validate(r_a, r_b)
         return self.mul(r_a, self.inv(r_b))
+
+    def __truediv__(self, other):
+        if isinstance(other, self.__class__):
+            self._validate(self.val_coefs, other.val_coefs)
+            return self.__class__(self.coefs, self.p, self.div(self.val_coefs, other.val_coefs))
+        else:
+            return self.__class__(self.coefs, self.p, self.div(self.val_coefs, self.int2list(other)))
+
+    def __rtruediv__(self, other):
+        return self.__class__(self.coefs, self.p, self.div(self.int2list(other), self.val_coefs))
 
     def poly_round_div(self, numerator, denominator):
         # n//d = q + r
@@ -149,7 +183,13 @@ class FiniteMonoPolynomial():
         if isinstance(other, self.__class__):
             return self.val_coefs == other.val_coefs
         else:
-            return self.val_coefs == other
+            return self.val_coefs == self.int2list(other)
+
+    def neg(self):
+        return [x * (-1) % self.p for x in self.val_coefs]
+
+    def __neg__(self):
+        return self.__class__(self.coefs, self.p, self.neg())
 
     def _mul_coef(self, r_a, r_b):
         aa = list(r_a[:])
@@ -171,3 +211,8 @@ class FiniteMonoPolynomial():
             r_b = [r_b]
         if len(r_a) > self.deg or len(r_b) > self.deg:
             raise ValueError(f'exceed the maximum degree {self.deg}')
+
+    def int2list(self, other):
+        if type(other) == int:
+            return [other] + [0] * (self.deg - 1)
+        return other
