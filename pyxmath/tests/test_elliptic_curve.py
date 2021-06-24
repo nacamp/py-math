@@ -2,9 +2,11 @@ import pytest
 from pyxmath.elliptic_curve import *
 from pyxmath.number_theory import *
 from pyxmath.number_theory import Field as F
+from pyxmath.finite_mono_polynomial import *
 
 
-def test_add():
+#@pytest.mark.skip(reason=".")
+def test_field():
     ec = EC([1, 1, 0, 1])
     p = 101
     f = F(p)
@@ -24,3 +26,14 @@ def test_add():
     assert modular_sqrt(ec.find_y_square(7), p) == 0
     # find_points
     assert len(find_points(ec, p)) == 105
+
+
+def test_poly():
+    ec = EC([1, 0, 0, 1])
+    p = 7691
+    poly = FiniteMonoPolynomial([1, 0, 1], p)
+
+    Q = PT(poly([6145, 633]), poly([109, 7372]))
+    assert ec.add(Q, Q) == PT(poly([2096, 4448]), poly([6039, 7386]))
+    assert ec.add(Q, PT(poly([2096, 4448]), poly([6039, 7386]))) == PT(poly([619, 6652]), poly([1174, 2367]))
+    assert ec.mul(Q, 135) == PT(poly([1403, 5806]), poly([2370, 6091]))
