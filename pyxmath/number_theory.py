@@ -113,6 +113,7 @@ class Field():
 
 
 # Frobenius endomorphism π
+# https://en.wikipedia.org/wiki/Frobenius_endomorphism
 # https://ko.wikipedia.org/wiki/%ED%94%84%EB%A1%9C%EB%B2%A0%EB%8B%88%EC%9A%B0%EC%8A%A4_%EC%82%AC%EC%83%81
 def frob_end_pi(r, q, exp=1):
     return r ** (q ** exp) % q
