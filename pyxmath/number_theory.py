@@ -48,6 +48,8 @@ class Field():
         if isinstance(other, self.__class__):
             return self.__class__(self.p, (self.n + other.n) % self.p)
         else:
+            if type(other) != int:
+                return NotImplemented
             return self.__class__(self.p, (self.n + other) % self.p)
 
     __radd__ = __add__
@@ -59,9 +61,13 @@ class Field():
         if isinstance(other, self.__class__):
             return self.__class__(self.p, (self.n - other.n) % self.p)
         else:
+            if type(other) != int:
+                return NotImplemented
             return self.__class__(self.p, (self.n - other) % self.p)
 
     def __rsub__(self, other):
+        if type(other) != int:
+            return NotImplemented
         return self.__class__(self.p, (other - self.n) % self.p)
 
     def mul(self, a, b):
@@ -71,6 +77,8 @@ class Field():
         if isinstance(other, self.__class__):
             return self.__class__(self.p, (self.n * other.n) % self.p)
         else:
+            if type(other) != int:
+                return NotImplemented
             return self.__class__(self.p, (self.n * other) % self.p)
 
     __rmul__ = __mul__
@@ -82,9 +90,13 @@ class Field():
         if isinstance(other, self.__class__):
             return self.__class__(self.p, (self.n * inv(other.n, self.p)) % self.p)
         else:
+            if type(other) != int:
+                return NotImplemented
             return self.__class__(self.p, (self.n * inv(other, self.p)) % self.p)
 
     def __rtruediv__(self, other):
+        if type(other) != int:
+            return NotImplemented
         return self.__class__(self.p, (other * inv(self.n, self.p)) % self.p)
 
     def inv(self, a):
