@@ -44,7 +44,7 @@ class FiniteMonoPolynomial():
             self._validate(self.val_coefs, other.val_coefs)
             return self.__class__(self.coefs, self.p, self.add(self.val_coefs, other.val_coefs))
         else:
-            return self.__class__(self.coefs, self.p, self.add(self.val_coefs, self.int2list(other)))
+            return self.__class__(self.coefs, self.p, self.add(self.val_coefs, self.change_to_coefs(other)))
 
     __radd__ = __add__
 
@@ -70,10 +70,10 @@ class FiniteMonoPolynomial():
         if isinstance(other, self.__class__):
             return self.__class__(self.coefs, self.p, self.sub(self.val_coefs, other.val_coefs))
         else:
-            return self.__class__(self.coefs, self.p, self.sub(self.val_coefs, self.int2list(other)))
+            return self.__class__(self.coefs, self.p, self.sub(self.val_coefs, self.change_to_coefs(other)))
 
     def __rsub__(self, other):
-        return self.__class__(self.coefs, self.p, self.sub(self.int2list(other), self.val_coefs))
+        return self.__class__(self.coefs, self.p, self.sub(self.change_to_coefs(other), self.val_coefs))
 
     def mul(self, r_a, r_b):
         '''mul
@@ -98,7 +98,7 @@ class FiniteMonoPolynomial():
             self._validate(self.val_coefs, other.val_coefs)
             return self.__class__(self.coefs, self.p, self.mul(self.val_coefs, other.val_coefs))
         else:
-            return self.__class__(self.coefs, self.p, self.mul(self.val_coefs, self.int2list(other)))
+            return self.__class__(self.coefs, self.p, self.mul(self.val_coefs, self.change_to_coefs(other)))
 
     __rmul__ = __mul__
 
@@ -111,10 +111,10 @@ class FiniteMonoPolynomial():
             self._validate(self.val_coefs, other.val_coefs)
             return self.__class__(self.coefs, self.p, self.div(self.val_coefs, other.val_coefs))
         else:
-            return self.__class__(self.coefs, self.p, self.div(self.val_coefs, self.int2list(other)))
+            return self.__class__(self.coefs, self.p, self.div(self.val_coefs, self.change_to_coefs(other)))
 
     def __rtruediv__(self, other):
-        return self.__class__(self.coefs, self.p, self.div(self.int2list(other), self.val_coefs))
+        return self.__class__(self.coefs, self.p, self.div(self.change_to_coefs(other), self.val_coefs))
 
     def poly_round_div(self, numerator, denominator):
         # n//d = q + r
@@ -183,7 +183,7 @@ class FiniteMonoPolynomial():
         if isinstance(other, self.__class__):
             return self.val_coefs == other.val_coefs
         else:
-            return self.val_coefs == self.int2list(other)
+            return self.val_coefs == self.change_to_coefs(other)
 
     def neg(self):
         return [x * (-1) % self.p for x in self.val_coefs]
@@ -212,7 +212,11 @@ class FiniteMonoPolynomial():
         if len(r_a) > self.deg or len(r_b) > self.deg:
             raise ValueError(f'exceed the maximum degree {self.deg}')
 
-    def int2list(self, other):
+    def change_to_coefs(self, other):
         if type(other) == int:
             return [other] + [0] * (self.deg - 1)
-        return other
+        if isinstance(other, nth.Field):
+            return [other.n] + [0] * (self.deg - 1)
+        if type(other) == list:
+            return other
+        raise ValueError('int, Field, list only supported')
