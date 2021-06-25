@@ -12,4 +12,11 @@ class PT():
         else:
             return self.x == other[0] and self.y == other[1]
 
+    def __neg__(self):
+        return self.__class__(self.x, -self.y)
+
+    def copy(self):
+        return self.__class__(self.x, self.y)
+
+
 __all__ = ['PT']
