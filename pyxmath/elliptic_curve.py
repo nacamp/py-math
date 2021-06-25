@@ -6,6 +6,9 @@ class EC:
     def __init__(self, coefs):
         self.coefs = coefs
 
+    def neg(self, p1):
+        return -p1
+
     def add(self, p1, p2):
         if p1 is None or p2 is None:
             return p1 if p2 is None else p2
@@ -14,6 +17,7 @@ class EC:
 
         if p2.x == p1.x and p2.y == p1.y:
             return self.double(p1)
+        # TODO: 이상하다 p2.y이로 비교해야 되는데
         elif p2.x == p1.x:
             return None
         else:
@@ -24,6 +28,11 @@ class EC:
         x = l ** 2 - p1.x - p2.x
         y = -l * x + l * p1.x - p1.y
         return PT(x, y)
+
+    def sub(self, p1, p2):
+        p2_copy = p2.copy()
+        p2_copy.y = -p2_copy.y
+        return self.add(p1, p2_copy)
 
     def mul(self, p1, n):
         if n == 0:
@@ -51,6 +60,20 @@ class EC:
             y = y + c * p_x ** deg
         return y
 
+    def slope(self, p1, p2):
+        a = self.coefs[1]
+        if p1 is None or p2 is None:
+            return p1 if p2 is None else p2
+
+        if p1.x == p2.x:
+            if p1.y == -p2.y:
+                return None
+            return (3 * p1.x ** 2 + a) / (2 * p2.y)
+        else:
+            try:
+                return (p2.y - p1.y) / (p2.x - p1.x)
+            except (ValueError, ZeroDivisionError):
+                return None
 
 def find_points(ec, p):
     ps = []
