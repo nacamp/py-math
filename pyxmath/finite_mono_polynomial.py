@@ -5,9 +5,9 @@ from pyxmath import number_theory as nth
 class FiniteMonoPolynomial():
 
     def __call__(self, val_coefs):
-        return self.__class__(self.coefs, self.p, val_coefs)
+        return self.__class__(self.coefs, self.q, val_coefs)
 
-    def __init__(self, coefs, p, val_coefs=None):
+    def __init__(self, coefs, q, val_coefs=None):
         '''
 
         Parameters
@@ -18,12 +18,12 @@ class FiniteMonoPolynomial():
 
         self.coefs = coefs
         self.deg = len(coefs) - 1
-        self.p = p
+        self.q = q
         self.fields = []
         # ex: x^3+2x+1=0 (mod3) : x^3=0x^2-2x-1 : [2,1,0] :  left_coef=1, right_coefs=[2,1,0]
         self.right_coefs = coefs[:]
         self.right_coefs.pop()
-        self.right_coefs = [x * (-1) % self.p for x in self.right_coefs]
+        self.right_coefs = [x * (-1) % self.q for x in self.right_coefs]
         self.val_coefs = val_coefs
 
     def __repr__(self):
@@ -37,14 +37,14 @@ class FiniteMonoPolynomial():
         :return:
         '''
         self._validate(r_a, r_b)
-        return [sum(x) % self.p for x in itertools.zip_longest(r_a, r_b, fillvalue=0)]
+        return [sum(x) % self.q for x in itertools.zip_longest(r_a, r_b, fillvalue=0)]
 
     def __add__(self, other):
         if isinstance(other, self.__class__):
             self._validate(self.val_coefs, other.val_coefs)
-            return self.__class__(self.coefs, self.p, self.add(self.val_coefs, other.val_coefs))
+            return self.__class__(self.coefs, self.q, self.add(self.val_coefs, other.val_coefs))
         else:
-            return self.__class__(self.coefs, self.p, self.add(self.val_coefs, self.change_to_coefs(other)))
+            return self.__class__(self.coefs, self.q, self.add(self.val_coefs, self.change_to_coefs(other)))
 
     __radd__ = __add__
 
@@ -63,17 +63,17 @@ class FiniteMonoPolynomial():
                 aa.append(0)
             if len(bb) == i:
                 bb.append(0)
-            aa[i] = (aa[i] - bb[i]) % self.p
+            aa[i] = (aa[i] - bb[i]) % self.q
         return aa
 
     def __sub__(self, other):
         if isinstance(other, self.__class__):
-            return self.__class__(self.coefs, self.p, self.sub(self.val_coefs, other.val_coefs))
+            return self.__class__(self.coefs, self.q, self.sub(self.val_coefs, other.val_coefs))
         else:
-            return self.__class__(self.coefs, self.p, self.sub(self.val_coefs, self.change_to_coefs(other)))
+            return self.__class__(self.coefs, self.q, self.sub(self.val_coefs, self.change_to_coefs(other)))
 
     def __rsub__(self, other):
-        return self.__class__(self.coefs, self.p, self.sub(self.change_to_coefs(other), self.val_coefs))
+        return self.__class__(self.coefs, self.q, self.sub(self.change_to_coefs(other), self.val_coefs))
 
     def mul(self, r_a, r_b):
         '''mul
@@ -91,14 +91,14 @@ class FiniteMonoPolynomial():
             over_coefs = self._mul_coef(self.right_coefs, over_coefs[r_coefs_len:])
             l = len(over_coefs)
             coefs = [sum(x) for x in itertools.zip_longest(over_coefs[0:r_coefs_len], coefs, fillvalue=0)]
-        return ([x % self.p for x in coefs])
+        return ([x % self.q for x in coefs])
 
     def __mul__(self, other):
         if isinstance(other, self.__class__):
             self._validate(self.val_coefs, other.val_coefs)
-            return self.__class__(self.coefs, self.p, self.mul(self.val_coefs, other.val_coefs))
+            return self.__class__(self.coefs, self.q, self.mul(self.val_coefs, other.val_coefs))
         else:
-            return self.__class__(self.coefs, self.p, self.mul(self.val_coefs, self.change_to_coefs(other)))
+            return self.__class__(self.coefs, self.q, self.mul(self.val_coefs, self.change_to_coefs(other)))
 
     __rmul__ = __mul__
 
@@ -109,12 +109,12 @@ class FiniteMonoPolynomial():
     def __truediv__(self, other):
         if isinstance(other, self.__class__):
             self._validate(self.val_coefs, other.val_coefs)
-            return self.__class__(self.coefs, self.p, self.div(self.val_coefs, other.val_coefs))
+            return self.__class__(self.coefs, self.q, self.div(self.val_coefs, other.val_coefs))
         else:
-            return self.__class__(self.coefs, self.p, self.div(self.val_coefs, self.change_to_coefs(other)))
+            return self.__class__(self.coefs, self.q, self.div(self.val_coefs, self.change_to_coefs(other)))
 
     def __rtruediv__(self, other):
-        return self.__class__(self.coefs, self.p, self.div(self.change_to_coefs(other), self.val_coefs))
+        return self.__class__(self.coefs, self.q, self.div(self.change_to_coefs(other), self.val_coefs))
 
     def poly_round_div(self, numerator, denominator):
         # n//d = q + r
@@ -123,7 +123,7 @@ class FiniteMonoPolynomial():
         while len(n) >= len(denominator):
             diff_deg = len(n) - len(denominator)
             d = [0] * diff_deg + denominator
-            c = (n[-1] * nth.inv(d[-1], self.p)) % self.p
+            c = (n[-1] * nth.inv(d[-1], self.q)) % self.q
             quotient.insert(0, c)
             d = [x * (-c) for x in d]
             n = [sum(x) for x in itertools.zip_longest(n, d, fillvalue=0)]
@@ -140,26 +140,26 @@ class FiniteMonoPolynomial():
 
         while sum(r) != 0:
             quotient = self.poly_round_div(old_r, r)
-            old_r, r = r, [sum(x) % self.p for x in
+            old_r, r = r, [sum(x) % self.q for x in
                            itertools.zip_longest(old_r, [x * (-1) for x in self._mul_coef(quotient, r)], fillvalue=0)]
-            old_s, s = s, [sum(x) % self.p for x in
+            old_s, s = s, [sum(x) % self.q for x in
                            itertools.zip_longest(old_s, [x * (-1) for x in self._mul_coef(quotient, s)], fillvalue=0)]
-            old_t, t = t, [sum(x) % self.p for x in
+            old_t, t = t, [sum(x) % self.q for x in
                            itertools.zip_longest(old_t, [x * (-1) for x in self._mul_coef(quotient, t)], fillvalue=0)]
             while len(r) and r[-1] == 0:
                 r.pop()
         return old_r, old_s, old_t
         # # old_r[0]이 1이 아닌경우는 old_r[0]으로 나눠야 한다.
         # old_s_inv = mul_inverse_mod(old_r[0], self.mod)
-        # # result = [ x % 3 for x in self.poly_mul2(old_s, [old_s_inv])]
+        # # result = [ x % 3 for x in self.qoly_mul2(old_s, [old_s_inv])]
         # result = [x % self.mod for x in self._mul_coef(old_s, [old_s_inv])]
         # return result + ([0] * (len(self.irr_coef) - len(result)))
 
     def inv(self, a):
         gcd, s, t = self.xgcd(a)
         # gcd[0]이 1이 아닌경우는 old_r[0]으로 나눠야 한다.
-        s_inv = nth.inv(gcd[0], self.p)
-        result = [x % self.p for x in self._mul_coef(s, [s_inv])]
+        s_inv = nth.inv(gcd[0], self.q)
+        result = [x % self.q for x in self._mul_coef(s, [s_inv])]
         return result + ([0] * (len(self.right_coefs) - len(result)))
 
     def pow(self, a, n):
@@ -171,13 +171,13 @@ class FiniteMonoPolynomial():
         return (x)
 
     def __pow__(self, other):
-        return self.__class__(self.coefs, self.p, self.pow(self.val_coefs, other))
+        return self.__class__(self.coefs, self.q, self.pow(self.val_coefs, other))
 
     def mod(self, r_a):
-        return ([x % self.p for x in r_a])
+        return ([x % self.q for x in r_a])
 
     def __mod__(self, other):
-        return self.__class__(self.coefs, self.p, [x % other for x in self.val_coefs])
+        return self.__class__(self.coefs, self.q, [x % other for x in self.val_coefs])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -186,10 +186,10 @@ class FiniteMonoPolynomial():
             return self.val_coefs == self.change_to_coefs(other)
 
     def neg(self):
-        return [x * (-1) % self.p for x in self.val_coefs]
+        return [x * (-1) % self.q for x in self.val_coefs]
 
     def __neg__(self):
-        return self.__class__(self.coefs, self.p, self.neg())
+        return self.__class__(self.coefs, self.q, self.neg())
 
     def _mul_coef(self, r_a, r_b):
         aa = list(r_a[:])
@@ -220,3 +220,22 @@ class FiniteMonoPolynomial():
         if type(other) == list:
             return other
         raise ValueError('int, Field, list only supported')
+
+    def div_q_r(self, i):
+        q = i // self.q
+        r = i % self.q
+        return q, r
+
+    def elements(self):
+        coefs = []
+        coef_0 = [0] * self.deg
+        for i in range(self.q ** self.deg):
+            coef = coef_0[:]
+            q = i
+            for j in range(self.q):
+                q, r = self.div_q_r(q)
+                coef[j] = r
+                if q == 0:
+                    break
+            coefs.append(self(coef))
+        return coefs
