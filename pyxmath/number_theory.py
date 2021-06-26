@@ -31,91 +31,94 @@ def inv(n, p):
 
 
 class Field():
-    def __init__(self, p, n=None):
-        self.p = p
+    def __init__(self, q, n=None):
+        self.q = q
         self.n = n
 
     def __repr__(self):
         return repr(self.n)
 
     def __call__(self, a):
-        return self.__class__(self.p, a % self.p)
+        return self.__class__(self.q, a % self.q)
 
     def add(self, a, b):
-        return (a + b) % self.p
+        return (a + b) % self.q
 
     def __add__(self, other):
         if isinstance(other, self.__class__):
-            return self.__class__(self.p, (self.n + other.n) % self.p)
+            return self.__class__(self.q, (self.n + other.n) % self.q)
         else:
             if type(other) != int:
                 return NotImplemented
-            return self.__class__(self.p, (self.n + other) % self.p)
+            return self.__class__(self.q, (self.n + other) % self.q)
 
     __radd__ = __add__
 
     def sub(self, a, b):
-        return (a - b) % self.p
+        return (a - b) % self.q
 
     def __sub__(self, other):
         if isinstance(other, self.__class__):
-            return self.__class__(self.p, (self.n - other.n) % self.p)
+            return self.__class__(self.q, (self.n - other.n) % self.q)
         else:
             if type(other) != int:
                 return NotImplemented
-            return self.__class__(self.p, (self.n - other) % self.p)
+            return self.__class__(self.q, (self.n - other) % self.q)
 
     def __rsub__(self, other):
         if type(other) != int:
             return NotImplemented
-        return self.__class__(self.p, (other - self.n) % self.p)
+        return self.__class__(self.q, (other - self.n) % self.q)
 
     def mul(self, a, b):
-        return (a * b) % self.p
+        return (a * b) % self.q
 
     def __mul__(self, other):
         if isinstance(other, self.__class__):
-            return self.__class__(self.p, (self.n * other.n) % self.p)
+            return self.__class__(self.q, (self.n * other.n) % self.q)
         else:
             if type(other) != int:
                 return NotImplemented
-            return self.__class__(self.p, (self.n * other) % self.p)
+            return self.__class__(self.q, (self.n * other) % self.q)
 
     __rmul__ = __mul__
 
     def div(self, a, b):
-        return (a * inv(b, self.p)) % self.p
+        return (a * inv(b, self.q)) % self.q
 
     def __truediv__(self, other):
         if isinstance(other, self.__class__):
-            return self.__class__(self.p, (self.n * inv(other.n, self.p)) % self.p)
+            return self.__class__(self.q, (self.n * inv(other.n, self.q)) % self.q)
         else:
             if type(other) != int:
                 return NotImplemented
-            return self.__class__(self.p, (self.n * inv(other, self.p)) % self.p)
+            return self.__class__(self.q, (self.n * inv(other, self.q)) % self.q)
 
     def __rtruediv__(self, other):
         if type(other) != int:
             return NotImplemented
-        return self.__class__(self.p, (other * inv(self.n, self.p)) % self.p)
+        return self.__class__(self.q, (other * inv(self.n, self.q)) % self.q)
 
     def inv(self, a):
-        return inv(a, self.p)
+        return inv(a, self.q)
 
     def pow(self, a, exp):
-        return (a ** exp) % self.p
+        return (a ** exp) % self.q
 
     def __pow__(self, other):
         if isinstance(other, self.__class__):
-            return self.__class__(self.p, (self.n ** other.n) % self.p)
+            return self.__class__(self.q, (self.n ** other.n) % self.q)
         else:
-            return self.__class__(self.p, (self.n ** other) % self.p)
+            return self.__class__(self.q, (self.n ** other) % self.q)
+
+    def __mod__(self, other):
+        return self.__class__(self.q, self.n % other)
 
     def neg(self, a):
-        return (a * (-1)) % self.p
+        return (a * (-1)) % self.q
 
     def __neg__(self):
-        return self.__class__(self.p, (self.n * (-1)) % self.p)
+        return self.__class__(self.q, (self.n * (-1)) % self.q)
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
