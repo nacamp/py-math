@@ -98,3 +98,11 @@ def test_etc():
     poly = FiniteMonoPolynomial([1, 2, 0, 1], 3)
     assert poly([1, 0, 1]).neg() == [2, 0, 2]
     assert -poly([1, 0, 1]) == [2, 0, 2]
+
+def test_element():
+    q = 3
+    poly = FiniteMonoPolynomial([1, 0, 0, 1], q)
+    pts = poly.elements()
+    # assert len(pts) == q**2
+    assert len(pts) == 3*3*3
+    # assert  pts == 3*3*3
