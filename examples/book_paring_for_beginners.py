@@ -1,7 +1,9 @@
 # https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwjhiuXAzbzrAhWzL6YKHQohB1oQFjAAegQIBBAB&url=http%3A%2F%2Fwww.craigcostello.com.au%2Fpairings%2FPairingsForBeginners.pdf&usg=AOvVaw1H5dLtelG00vWsvWRGxBNZ
 # ParingsForBeginners.pdf
 import inspect
+from pyxmath import *
 from pyxmath.elliptic_curve import *
+from pyxmath.finite_mono_polynomial import *
 
 
 def find_r(order):
@@ -12,17 +14,6 @@ def find_r(order):
     return rs
 
 
-def torsion(ec, p, r):
-    print(f'{r}-torsion')
-    for i in range(1, r + 1):
-        r = ec.mul(p, i)
-        if r is None:
-            print(None)
-            print(f'\r{p} order :', i)
-        else:
-            print(r, end=" ")
-
-
 def p22():
     print(inspect.stack()[0][3], '>>>>>')
     ec = EC([1, 1, 0, 1])
@@ -30,22 +21,25 @@ def p22():
     points = find_points(ec, p)
     order = len(points)
     print('points : ', points)
-    print('order : ', order)
+    print(f'order = {order} = {get_prime_factors(order)}')
     f = Field(101)
     print('-------------------')
     # P is a generator
     P = PT(f(47), f(12))
-    torsion(ec, P, order // 1)
+    print(f'{order // 1}-torsion')
+    print(torsion(ec, P, order // 1))
     print('-------------------')
     print('r : ')
     rs = find_r(order)
     print(find_r(order))
     print('-------------------')
+    print(f'{order // 5}-torsion')
     order5_p = ec.mul(P, 5)
-    torsion(ec, order5_p, order // 5)
+    print(torsion(ec, order5_p, order // 5))
     print('-------------------')
+    print(f'{order // 35}-torsion')
     order35_p = ec.mul(P, 35)
-    torsion(ec, order35_p, order // 35)
+    print(torsion(ec, order35_p, order // 35))
 
 
 def p23():
@@ -70,8 +64,8 @@ def p24():
     ec = EC([b, -3, 0, 1])
     f = Field(q)
     G = PT(f(xG), f(yG))
-    print(ec.mul(G, r-1))
-    for i in range(1, 10): #for i in range(1, r+1):
+    print(ec.mul(G, r - 1))
+    for i in range(1, 10):  # for i in range(1, r+1):
         pt = ec.mul(G, i)
         if pt.x == xH and pt.y == yH:
             print(f'k={i}')
@@ -79,4 +73,176 @@ def p24():
         else:
             print(pt)
 
-p24()
+
+def p26():
+    print(inspect.stack()[0][3], '>>>>>')
+    ec = EC([3, 4, 0, 1])
+    q = 67
+
+    # q^1
+    assert frob_end_pi(15, q, 1) == 15
+    assert frob_end_pi(50, q, 1) == 50
+    # q^2
+    poly = FiniteMonoPolynomial([1, 0, 1], q)
+    assert poly.pow([16, 2], 67 ** 2) == [16, 2]
+    assert frob_end_pi(poly([16, 2]), q, 2) == [16, 2]
+    assert frob_end_pi(poly([39, 30]), q, 2) == [39, 30]
+    # q^3
+    poly = FiniteMonoPolynomial([2, 0, 0, 1], q)
+    assert frob_end_pi(poly([8, 4, 15]), q, 3) == [8, 4, 15]
+
+    print(11)
+
+
+# TODO p27-32
+'''
+https://en.wikipedia.org/wiki/Schoof%27s_algorithm
+https://github.com/pdinges/python-schoof
+'''
+
+
+def p48():
+    print(inspect.stack()[0][3], '>>>>>')
+    ec = EC([1, 0, 0, 1])
+    q = 7691
+    points = find_points(ec, q)
+    order = len(points)
+    # print('points : ', points)
+    print(f'order = {order} = {get_prime_factors(order)}')
+    # print(points)
+
+    f = Field(q)
+    P = PT(f(2693), f(4312))
+    print(len(torsion(ec, P, q)))
+
+    poly = FiniteMonoPolynomial([1, 0, 1], q)
+    Q = PT(poly([6145, 633]), poly([109, 7372]))
+    print(len(torsion(ec, Q, q)))
+
+
+def p51():
+    print(inspect.stack()[0][3], '>>>>>')
+    q = 11
+    ec = EC([4, 0, 0, 1])
+    points = find_points(ec, q)
+    order = len(points)
+    print('points : ', points)
+    print(f'order = {order} = {get_prime_factors(order)}')
+    print(f'3-tortion: {r_torsion(ec, points, 3)}')
+
+    poly = FiniteMonoPolynomial([1, 0, 1], q)
+    # P = PT(poly([8, 0]), poly([0, 1]))
+    print(f'3-tortion: {torsion(ec, PT(poly([8, 0]), poly([0, 1])), q ** 2)}')
+    print(f'3-tortion: {torsion(ec, PT(poly([7, 2]), poly([0, 10])), q ** 2)}')
+    print(f'3-tortion: {torsion(ec, PT(poly([7, 9]), poly([0, 1])), q ** 2)}')
+
+
+def p51():
+    print(inspect.stack()[0][3], '>>>>>')
+    q = 11
+    ec = EC([4, 0, 0, 1])
+    points = find_points(ec, q)
+    order = len(points)
+    print('points : ', points)
+    print(f'order = {order} = {get_prime_factors(order)}')
+    print(f'3-tortion: {r_torsion(ec, points, 3)}')
+
+    poly = FiniteMonoPolynomial([1, 0, 1], q)
+    print(f'3-tortion: {torsion(ec, PT(poly([8, 0]), poly([0, 1])), q ** 2)}')
+    print(f'3-tortion: {torsion(ec, PT(poly([7, 2]), poly([0, 10])), q ** 2)}')
+    print(f'3-tortion: {torsion(ec, PT(poly([7, 9]), poly([0, 1])), q ** 2)}')
+
+
+def p56():
+    print(inspect.stack()[0][3], '>>>>>')
+    q = 59
+    ec = EC([1, 0, 0, 1])
+    points = find_points(ec, q)
+    order = len(points)
+    print('points : ', points)
+    print(f'order = {order} = {get_prime_factors(order)}')
+    print(f'5-tortion: {r_torsion(ec, points, 5)}')
+
+    f = Field(q)
+    assert frob_end_pi(f(18), q, 1) == f(18)
+
+    poly = FiniteMonoPolynomial([1, 0, 1], q)
+    assert frob_end_pi(poly([0, 37]), q, 1) != [0, 37]
+    assert frob_end_pi(poly([0, 37]), q, 2) == poly([0, 37])
+
+    # _24i+29, distortion map
+    assert poly([29, 24]) * f(18) == [50, 19]
+    assert poly([29, 24]) ** 2 * f(18) == [50, 40]
+    assert poly([29, 24]) ** 3 * f(18) == [18]
+
+    assert poly([29, 24]) * poly([41, 38]) == [41, 21]
+    assert poly([29, 24]) ** 2 * poly([41, 38]) == [36, 0]
+    assert poly([29, 24]) ** 3 * poly([41, 38]) == [41, 38]
+
+
+def p69():
+    print(inspect.stack()[0][3], '>>>>>')
+    ec = EC([0, -1, 0, 1])
+    q = 23
+    f = Field(q)
+    poly = FiniteMonoPolynomial([1, 0, 1], q)
+
+    P = PT(f(2), f(11))
+    Q = PT(poly([21, 0]), poly([0, 12]))
+    S = PT(poly([18, 10]), poly([13, 13]))
+    assert ec.weil_pairing(P, Q, S, 3) == [11, 15]
+    assert ec.weil_pairing(ec.mul(P, 2), Q, S, 3) == [11, 8]
+    assert ec.weil_pairing(P, ec.mul(Q, 2), S, 3) == [11, 8]
+    # R = PT(poly([0, 17]), poly([21, 2]))
+    # print(ec.weil_pairing2(P, Q, S, R, 3))
+
+
+def p73():
+    print(inspect.stack()[0][3], '>>>>>')
+    ec = EC([-3, 0, 0, 1])
+    q = 5
+    poly = FiniteMonoPolynomial([2, 0, 1], q)
+    f = Field(q)
+    P = PT(f(3), f(2))
+    Q = PT(poly([1, 1]), poly([2, 4]))
+    R = PT(poly([0, 2]), poly([2, 1]))
+    Q_R = ec.add(Q, R)
+    assert Q_R == PT(poly([1, 3]), poly([2, 0]))
+    m = 3
+    ms = [int(x) for x in bin(m)[2:]][::-1]
+    assert ec.miller(P, Q_R, ms) == [1, 1]
+    assert ec.miller(P, R, ms) == [4, 0]
+    assert ec.miller(P, Q_R, ms) / ec.miller(P, R, ms) == [4, 4]
+    assert ec.tate_pairing(P, Q, R, m) == [4, 4]
+    # DQ = ([2]Q) − (Q)
+    assert ec.tate_pairing(P, ec.mul(Q, 2), R, m) == [4, 2]
+    assert ec.tate_pairing(ec.mul(P, 2), Q, R, m) == [2, 3]
+
+    # (q^k-1)/r
+    e = (q ** 2 - 1) // 3
+    # tr -> Tr
+    assert ec.tate_pairing(P, Q, R, m) ** 2 ** e == poly([2, 4])
+    assert ec.tate_pairing(P, ec.mul(Q, 2), R, m) ** e == poly([2, 4])
+    assert ec.tate_pairing(ec.mul(P, 2), Q, R, m) ** e == poly([2, 4])
+
+
+def p78():
+    print(inspect.stack()[0][3], '>>>>>')
+    ec = EC([15, 21, 0, 1])
+    q = 47
+    poly = FiniteMonoPolynomial([5, 0, -4, 0, 1], q)
+    f = Field(q)
+    P = PT(f(45), f(23))
+    Q = PT(poly([29, 0, 31, 0]), poly([0, 11, 0, 35]))
+    # Q=R
+    R = PT(poly([29, 0, 31, 0]), poly([0, 11, 0, 35]))
+
+    m = 17
+    ms = [int(x) for x in bin(m)[2:]][::-1]
+    assert ec.tate_pairing(P, Q, R, m) == [22, 10, 6, 17]
+    # 시간많이걸림
+    # Tr
+    assert ec.tate_pairing(P, Q, R, m) ** 287040 == [39, 45, 43, 33]
+
+
+p78()
