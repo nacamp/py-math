@@ -14,6 +14,30 @@ def find_r(order):
     return rs
 
 
+def solve_poly(coef, x):
+    return sum(c * x ** i for i, c in enumerate(coef))
+
+
+# x^2  ~ q (mod n)
+def qr(x_2, mod):
+    if x_2 >= mod:
+        x_2 = x_2 % mod
+    results = []
+    for x in range(mod):
+        if x ** 2 % mod == x_2:
+            results.append(x)
+    return results
+
+
+def g_p_q(p, q, s):
+    y_p = p.y
+    x_p = p.x
+    x_q = q.x
+    print(f'y +{-s}x + {-y_p + s * x_p}')  # y -y_p -s(x-x_p)
+    print('/')
+    print(f'x+ {x_p + x_q - (s ** 2)}')
+
+
 def p22():
     print(inspect.stack()[0][3], '>>>>>')
     ec = EC([1, 1, 0, 1])
@@ -76,9 +100,7 @@ def p24():
 
 def p26():
     print(inspect.stack()[0][3], '>>>>>')
-    ec = EC([3, 4, 0, 1])
     q = 67
-
     # q^1
     assert frob_end_pi(15, q, 1) == 15
     assert frob_end_pi(50, q, 1) == 50
@@ -91,14 +113,105 @@ def p26():
     poly = FiniteMonoPolynomial([2, 0, 0, 1], q)
     assert frob_end_pi(poly([8, 4, 15]), q, 3) == [8, 4, 15]
 
-    print(11)
+
+def p27():
+    print(inspect.stack()[0][3], '>>>>>')
+    # E_3
+    # q distortion map
+    q = 19
+    f = Field(q)
+    assert f(7) == 7
+    assert f(7) * f(7) == 11
+    assert f(7) * f(7) * f(7) == 1
+
+    # q^2 distortion map
+    q = 23
+    poly = FiniteMonoPolynomial([1, 0, 1], q)
+    assert poly([11, 8]) * poly([11, 8]) == [11, 15]
+    assert poly([11, 8]) * poly([11, 8]) * poly([11, 8]) == [1, 0]
 
 
-# TODO p27-32
-'''
-https://en.wikipedia.org/wiki/Schoof%27s_algorithm
-https://github.com/pdinges/python-schoof
-'''
+def p29():
+    print(inspect.stack()[0][3], '>>>>>')
+    ec = EC([1, 1, 0, 1])
+    q = 101
+    points = find_points(ec, q)
+    order = len(points)
+    # print('points : ', points)
+    print(f'order = {order} = {get_prime_factors(order)}')
+    print(f'2-tortion: {r_torsion(ec, points, 2)}')
+
+    print('ψ2(x) = 4x3 + 4x + 4')
+    for x in range(101):
+        y = solve_poly([4, 4, 0, 4], x) % q
+        if y == 0:
+            print(x, end='')
+    print('\nψ2(x) = 3x4 +6x2 +12x+100')
+    print('ψ3(x) = (x+73)(x+84)(x2 +45x+36)')
+    print(f'{(101 - 73) % q}, {(101 - 84) % q}')
+    for x in range(101):
+        y = solve_poly([100, 12, 6, 0, 3], x) % q
+        if y == 0:
+            print(x, end=' ')
+    print(f'\n2-tortion: {r_torsion(ec, points, 3)}')
+
+
+def p37():
+    print(inspect.stack()[0][3], '>>>>>')
+    ec = EC([20, 20, 0, 1])
+    q = 103
+    f = Field(q)
+    P = PT(f(26), f(20))
+    Q = PT(f(63), f(78))
+    R = PT(f(59), f(95))
+    T = PT(f(77), f(84))
+
+    print('f = 6y+71x2+91x+91 / x2+70x2+11')
+    print(f'x2 + {-(P.x + Q.x)}x+{P.x * Q.x}')
+    print(f'x2 + {-(R.x + T.x)}x+{R.x * T.x}')
+
+    print('Gp,q>>')
+    s = ec.slope(P, Q)
+    g_p_q(P, Q, s)
+
+    print('Gr,t>>')
+    s = ec.slope(R, T)
+    g_p_q(R, T, s)
+
+    print('Gu,u>>')
+    U = ec.add(R, T)
+    print(U)
+    print('Gr,t>>')
+    s = ec.slope(U, U)
+    g_p_q(U, U, s)
+
+    print('y -y_p -s(x-x_p)>>')
+    s = ec.slope(P, Q)
+    y_p = P.y
+    x_p = P.x
+    print(f'y +{-s}x + {-y_p + s * x_p}')  # y -y_p -s(x-x_p)
+
+    print('x-u.x>>')
+    print(f'x +{-U.x} ')
+
+
+def p43():
+    print(inspect.stack()[0][3], '>>>>>')
+    ec = EC([-2, -1, 0, 1])
+    q = 163
+    f = Field(q)
+    P = PT(f(43), f(154))
+    Q = PT(f(46), f(38))
+    y_p = P.y
+    x_p = P.x
+    # x_q = Q.x
+    s = ec.slope(P, Q)
+    print(f'y +{-s}x + {-y_p + s * x_p}')  # y -y_p -s(x-x_p)
+    y_p = P.y
+    x_p = P.x
+    # x_q = Q.x
+    s = ec.slope(P, P)
+    print(f'y +{-s}x + {-y_p + s * x_p}')  # y -y_p -s(x-x_p)
 
 
 def p48():
@@ -245,4 +358,10 @@ def p78():
     assert ec.tate_pairing(P, Q, R, m) ** 287040 == [39, 45, 43, 33]
 
 
-p78()
+p48()
+
+# TODO p32
+'''
+https://en.wikipedia.org/wiki/Schoof%27s_algorithm
+https://github.com/pdinges/python-schoof
+'''
