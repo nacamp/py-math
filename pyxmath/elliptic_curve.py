@@ -17,8 +17,7 @@ class EC:
 
         if p2.x == p1.x and p2.y == p1.y:
             return self.double(p1)
-        # TODO: 이상하다 p2.y이로 비교해야 되는데
-        elif p2.x == p1.x:
+        elif p2.x == p1.x and p2.y == (-p1.y):
             return None
         else:
             try:
@@ -61,6 +60,15 @@ class EC:
         for deg, c in enumerate(self.coefs):
             y = y + c * p_x ** deg
         return y
+
+    def find_y_square2(self, x, y, ef):
+        points = []
+        for sqrt_y in ef:
+            c = sqrt_y ** 2
+            # if c % x.q == y:
+            if c == y:
+                points.append((x, sqrt_y))
+        return points
 
     def slope(self, p1, p2):
         a = self.coefs[1]
