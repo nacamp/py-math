@@ -170,12 +170,18 @@ class FiniteMonoPolynomial():
             x = self.mul(x, a)
         return (x)
 
-    def __pow__(self, other):
+    def __pow__(self, other, mod=None):
         return self.__class__(self.coefs, self.q, self.pow(self.val_coefs, other))
+        # if mod is not None:
+        #     return self.__class__(self.coefs, self.q, self.pow(self.val_coefs, other))
+        # else:
+        #     return self.__class__(self.coefs, self.q, self.pow(self.val_coefs, other))
 
     def mod(self, r_a):
         return ([x % self.q for x in r_a])
 
+    # https://math.stackexchange.com/questions/844231/polynomial-multiplication-modulo-polynomial
+    # TODO: when use mod, coefs or poly
     def __mod__(self, other):
         return self.__class__(self.coefs, self.q, [x % other for x in self.val_coefs])
 
