@@ -102,3 +102,30 @@ def test_miller_tate():
     # DQ = ([2]Q) − (Q)
     assert ec.tate_pairing(P, ec.mul(Q, 2), R, m) == [4, 2]
     assert ec.tate_pairing(ec.mul(P, 2), Q, R, m) == [2, 3]
+
+def test_tate_m_exceed_p():
+    ec = EC([0, 1, 0, 1])
+    p = 71
+    find_points(ec, p)
+    poly = FiniteMonoPolynomial([1, 0, 1], p)
+    f = F(p)
+    P = PT(f(11), f(8))
+    Q = PT(poly([60, 0]), poly([0, 8]))
+    P_Members = torsion(ec, P, p + 1)
+    m = len(P_Members)
+    # m cannot exceed p
+    if m > p:
+        m = p
+    print(len(P_Members), P_Members)
+    Q_Members = torsion(ec, Q, p ** 2)
+    print(len(Q_Members), Q_Members)
+
+    # e(P,Q)**2 = e([2]P,Q) = e(P,[2]Q)
+    print(ec.tate_pairing(P, Q, Q, 71) ** 2)
+    assert ec.tate_pairing(P, Q, Q, 71) ** 2 == ec.tate_pairing(ec.mul(P, 2), Q, Q, m) \
+           == ec.tate_pairing(P,ec.mul(Q, 2),Q, m) == [18,23]
+
+    # e([P,Q)**(2*3) = e([3]P,[2]Q)
+    print(ec.tate_pairing(P, Q, Q, m) ** 6)
+    assert ec.tate_pairing(P, Q, Q, m) ** 6 == ec.tate_pairing(ec.mul(P, 3), ec.mul(Q, 2), Q, m) \
+           == [57, 36]
