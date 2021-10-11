@@ -103,10 +103,12 @@ def test_miller_tate():
     assert ec.tate_pairing(P, ec.mul(Q, 2), R, m) == [4, 2]
     assert ec.tate_pairing(ec.mul(P, 2), Q, R, m) == [2, 3]
 
+
+# p≡3 mod 4 Supersingular elliptic curves
 def test_tate_m_exceed_p():
     ec = EC([0, 1, 0, 1])
     p = 71
-    find_points(ec, p)
+    points = find_points(ec, p)
     poly = FiniteMonoPolynomial([1, 0, 1], p)
     f = F(p)
     P = PT(f(11), f(8))
@@ -116,16 +118,28 @@ def test_tate_m_exceed_p():
     # m cannot exceed p
     if m > p:
         m = p
-    print(len(P_Members), P_Members)
+    # print(len(P_Members), P_Members)
     Q_Members = torsion(ec, Q, p ** 2)
-    print(len(Q_Members), Q_Members)
+    # print(len(Q_Members), Q_Members)
+
+    print(ec.tate_pairing(P, ec.mul(Q, 2), Q, m))
+    print(ec.tate_pairing(P, Q, Q, m) * 2)
+
+    # e(P+Y,Q) = e(P,Q)*e(Y*Q) = [30,33]
+    Y = PT(f(2), f(9))
+    assert ec.tate_pairing(ec.add(P, Y), Q, Q, m) == ec.tate_pairing(P, Q, Q, m) * ec.tate_pairing(Y, Q, Q, m) \
+           == [30, 33]
 
     # e(P,Q)**2 = e([2]P,Q) = e(P,[2]Q)
-    print(ec.tate_pairing(P, Q, Q, 71) ** 2)
-    assert ec.tate_pairing(P, Q, Q, 71) ** 2 == ec.tate_pairing(ec.mul(P, 2), Q, Q, m) \
-           == ec.tate_pairing(P,ec.mul(Q, 2),Q, m) == [18,23]
+    # print(ec.tate_pairing(P, Q, Q, 71) ** 2)
+    assert ec.tate_pairing(P, Q, Q, m) ** 2 == ec.tate_pairing(ec.mul(P, 2), Q, Q, m) \
+           == ec.tate_pairing(P, ec.mul(Q, 2), Q, m) == [18, 23]
 
     # e([P,Q)**(2*3) = e([3]P,[2]Q)
-    print(ec.tate_pairing(P, Q, Q, m) ** 6)
+    # print(ec.tate_pairing(P, Q, Q, m) ** 6)
     assert ec.tate_pairing(P, Q, Q, m) ** 6 == ec.tate_pairing(ec.mul(P, 3), ec.mul(Q, 2), Q, m) \
            == [57, 36]
+    # print((ec.tate_pairing(P, Q, Q, m) ** 2) * 3)
+    # print(ec.tate_pairing(P, Q, Q, m) ** 3)
+    # print(ec.tate_pairing(P, Q, Q, m) ** 3 + ec.tate_pairing(P, Q, Q, m) ** 3)
+    assert p % 4 == 3
