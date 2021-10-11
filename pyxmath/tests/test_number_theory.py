@@ -55,3 +55,10 @@ def test_yield_operation():
 
     poly = FiniteMonoPolynomial([1, 2, 0, 1], p)
     assert Field(p, 3) + poly([1, 1, 1]) == [4, 1, 1]
+
+
+def test_rmod():
+    p = 71
+    assert rmod(0.5, p) == 36
+    assert rmod(72, p) == 1
+    assert rmod(72.5, p) == 37

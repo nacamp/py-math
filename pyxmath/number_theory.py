@@ -1,5 +1,5 @@
 import sys
-
+from fractions import Fraction
 
 def xgcd(a, b):
     """
@@ -16,7 +16,6 @@ def xgcd(a, b):
         old_t, t = t, old_t - quotient * t
     return old_r, old_s, old_t
 
-
 def inv(n, p):
     # if sys.version_info.major >= 3 and sys.version_info.minor >= 8:
     #     return pow(n, -1, p)
@@ -29,6 +28,13 @@ def inv(n, p):
     else:
         return x % p
 
+def rmod(a, p):
+    if round(a) == a:
+        if a == 0:
+            return 0
+        return a % p
+    n = Fraction(str(a))
+    return n.numerator*inv(n.denominator, p) % p
 
 class Field():
     def __init__(self, q, n=None):
