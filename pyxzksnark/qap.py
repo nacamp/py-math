@@ -1,6 +1,7 @@
 # https://github.com/ethereum/research/blob/master/zksnark/qap_creator.py
 # Polynomials are stored as arrays, where the ith element in
 # the array is the ith degree coefficient
+from pyxmath.elliptic_curve import *
 
 # Multiply two polynomials
 def multiply_polys(a, b):
@@ -34,6 +35,22 @@ def div_polys(a, b):
         pos = len(remainder) - len(b)
         o[pos] = leading_fac
         remainder = subtract_polys(remainder, multiply_polys(b, [0] * pos + [leading_fac]))[:-1]
+    return o, remainder
+
+
+# Divide a/b, return quotient and remainder
+def div_polys2(a, b, q):
+    o = [0] * (len(a) - len(b) + 1)
+    remainder = a
+    while len(remainder) >= len(b):
+        # leading_fac = remainder[-1] / b[-1]
+        leading_fac = (remainder[-1] * inv(b[-1], q)) % q
+        pos = len(remainder) - len(b)
+        o[pos] = leading_fac
+        remainder = subtract_polys(remainder, multiply_polys(b, [0] * pos + [leading_fac]))[:-1]
+        for i, aa in enumerate(remainder):
+            remainder[i] = rmod(aa, q)
+
     return o, remainder
 
 
@@ -101,6 +118,24 @@ def create_solution_polynomials(r, new_A, new_B, new_C):
     return Apoly, Bpoly, Cpoly, o
 
 
+def create_solution_polynomials2(r, new_A, new_B, new_C, q):
+    Apoly = []
+    for rval, a in zip(r, new_A):
+        Apoly = add_polys(Apoly, multiply_polys([rval], a))
+    Bpoly = []
+    for rval, b in zip(r, new_B):
+        Bpoly = add_polys(Bpoly, multiply_polys([rval], b))
+    Cpoly = []
+    for rval, c in zip(r, new_C):
+        Cpoly = add_polys(Cpoly, multiply_polys([rval], c))
+    o = subtract_polys(multiply_polys(Apoly, Bpoly), Cpoly)
+    for i, aa in enumerate(o):
+        o[i] = rmod(aa, q)
+    for i in range(1, len(new_A[0]) + 1):
+        assert abs(eval_poly(o, i)) % q == 0, (eval_poly(o, i), i)
+    return Apoly, Bpoly, Cpoly, o
+
+
 def create_divisor_polynomial(sol, Z):
     quot, rem = div_polys(sol, Z)
     for x in rem:
@@ -108,65 +143,8 @@ def create_divisor_polynomial(sol, Z):
     return quot
 
 
-
-r=[1, 2, 4, -12, 6, -2]
-A=[
-[0, 1, 1, 0, 0, 0],
-[-4, 1, 0, 0, 0, 0],
-[0, 0, 0, 0, 1, 0]]
-B=[
-[1, 0, 0, 0, 0, 0],
-[1, 0, 0, 0, 0, 0],
-[0, 0, 0, 0, 0, 1]]
-
-C=[
-[0, 0, 0, 0, 1, 0],
-[0, 0, 0, 0, 0, 1],
-[0, 0, 0, 1, 0, 0]
-]
-
-# r = [1, 3, 35, 9, 27, 30]
-# A = [[0, 1, 0, 0, 0, 0],
-#      [0, 0, 0, 1, 0, 0],
-#      [0, 1, 0, 0, 1, 0],
-#      [5, 0, 0, 0, 0, 1]]
-# B = [[0, 1, 0, 0, 0, 0],
-#      [0, 1, 0, 0, 0, 0],
-#      [1, 0, 0, 0, 0, 0],
-#      [1, 0, 0, 0, 0, 0]]
-# C = [[0, 0, 0, 1, 0, 0],
-#      [0, 0, 0, 0, 1, 0],
-#      [0, 0, 0, 0, 0, 1],
-#      [0, 0, 1, 0, 0, 0]]
-
-Ap, Bp, Cp, Z = r1cs_to_qap(A, B, C)
-
-print('Ap')
-for x in Ap:
-    print(x)
-
-print('Bp')
-for x in Bp:
-    print(x)
-
-print('Cp')
-for x in Cp:
-    print(x)
-
-print('Z')
-print(Z)
-
-Apoly, Bpoly, Cpoly, sol = create_solution_polynomials(r, Ap, Bp, Cp)
-print('Apoly')
-print(Apoly)
-print('Bpoly')
-print(Bpoly)
-print('Cpoly')
-print(Cpoly)
-print('Sol')
-
-print(sol)
-
-print('Z cofactor')
-
-print((create_divisor_polynomial(sol, Z)))
+def create_divisor_polynomial2(sol, Z, q):
+    quot, rem = div_polys2(sol, Z, q)
+    for x in rem:
+        assert abs(x) < 10 ** -10
+    return quot
