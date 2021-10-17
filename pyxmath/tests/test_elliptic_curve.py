@@ -143,3 +143,14 @@ def test_tate_m_exceed_p():
     # print(ec.tate_pairing(P, Q, Q, m) ** 3)
     # print(ec.tate_pairing(P, Q, Q, m) ** 3 + ec.tate_pairing(P, Q, Q, m) ** 3)
     assert p % 4 == 3
+
+def test_etc():
+    ec = EC([0, 1, 0, 1])
+    # not prime
+    p = 75
+    assert p % 4 == 3
+    assert is_supersingular(ec,p) == False
+    # prime
+    p = 71
+    assert p % 4 == 3
+    assert is_supersingular(ec,p) == True
