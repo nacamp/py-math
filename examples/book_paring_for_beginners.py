@@ -293,6 +293,35 @@ def p56():
     assert poly([29, 24]) ** 3 * poly([41, 38]) == [41, 38]
 
 
+def p57():
+    print(inspect.stack()[0][3], '>>>>>')
+    q = 59
+    ec = EC([1, 0, 0, 1])
+    assert is_supersingular(ec, q) == True
+    points = find_points(ec, q)
+    order = len(points)
+    print('points : ', points)
+    print(f'order = {order} = {get_prime_factors(order)}')
+    print('r = ', end='')
+    for i in get_prime_factors(order):
+        print(i[0], end=',')
+    print('')
+    print(f'5-tortion: {r_torsion(ec, points, 5)}')
+
+    # distortion
+    f = Field(q)
+    poly = FiniteMonoPolynomial([1, 0, 1], q)
+    pt1 = [25, 30]
+    pt2 = [poly([34, 0]), poly([0, 30])]
+    assert pt1[0] * (-1) % q == pt2[0]
+    assert pt1[1] * poly([0, 1]) == pt2[1]
+
+    assert pt2[0] * (-1) == poly(pt1[0])
+    assert poly([0, 29]) * poly([0, 1]) == poly([30, 0])
+    assert poly([0, 30]) * poly([0, 1]) == poly([29, 0])
+    assert poly([0, 28]) * poly([0, 1]) == poly([31, 0])
+    assert poly([0, 31]) * poly([0, 1]) == poly([28, 0])
+
 def p69():
     print(inspect.stack()[0][3], '>>>>>')
     ec = EC([0, -1, 0, 1])
@@ -358,7 +387,7 @@ def p78():
     assert ec.tate_pairing(P, Q, R, m) ** 287040 == [39, 45, 43, 33]
 
 
-p48()
+p57()
 
 # TODO p32
 '''
