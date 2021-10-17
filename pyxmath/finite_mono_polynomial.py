@@ -5,6 +5,8 @@ from pyxmath import number_theory as nth
 class FiniteMonoPolynomial():
 
     def __call__(self, val_coefs):
+        if type(val_coefs) == int or type(val_coefs) == float:
+            val_coefs = [val_coefs]
         return self.__class__(self.coefs, self.q, val_coefs)
 
     def __init__(self, coefs, q, val_coefs=None):
