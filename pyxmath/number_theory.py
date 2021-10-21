@@ -1,5 +1,7 @@
 import sys
 from fractions import Fraction
+from pyxmath import *
+
 
 def xgcd(a, b):
     """
@@ -16,6 +18,7 @@ def xgcd(a, b):
         old_t, t = t, old_t - quotient * t
     return old_r, old_s, old_t
 
+
 def inv(n, p):
     # if sys.version_info.major >= 3 and sys.version_info.minor >= 8:
     #     return pow(n, -1, p)
@@ -28,13 +31,15 @@ def inv(n, p):
     else:
         return x % p
 
+
 def rmod(a, p):
     if round(a) == a:
         if a == 0:
             return 0
         return a % p
     n = Fraction(str(a))
-    return n.numerator*inv(n.denominator, p) % p
+    return n.numerator * inv(n.denominator, p) % p
+
 
 class Field():
     def __init__(self, q, n=None):
@@ -138,6 +143,32 @@ class Field():
 # https://ko.wikipedia.org/wiki/%ED%94%84%EB%A1%9C%EB%B2%A0%EB%8B%88%EC%9A%B0%EC%8A%A4_%EC%82%AC%EC%83%81
 def frob_end_pi(r, q, exp=1):
     return r ** (q ** exp) % q
+
+
+def modular_sqrt_for_power(a, p):
+    p_2 = p
+    f = get_prime_factors(p_2)
+    if len(f) > 1:
+        raise ValueError(f'{p_2} is not prime')
+    if f[0][1] > 1:
+        p_1 = f[0][0]
+        mod_p_1 = a % p_1
+        mod_p_2 = a % p_2
+        b_1 = modular_sqrt(mod_p_1, p_1)
+        if p_1 - b_1 < b_1:
+            b_1 = p_1 - b_1
+        b_2 = mod_p_2 % p_2
+
+        lhs = (2 * b_1 * p_1) / p_1
+        rhs = (b_2 - b_1 ** 2) / p_1
+        try:
+            m = inv(lhs, p_1) * rhs % p_1
+            return int(b_1 + m*p_1)
+        except Exception as e:
+            raise ValueError(
+                f'{a} is not invertible for the given modulus {p}')
+    else:
+        return modular_sqrt(a, p)
 
 
 # https://gist.github.com/nakov/60d62bdf4067ea72b7832ce9f71ae079
