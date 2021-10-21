@@ -1,3 +1,4 @@
+import math
 from pyxmath import *
 from pyxmath.number_theory import *
 
@@ -134,21 +135,27 @@ def is_supersingular(ec, p):
     else:
         return False
 
-
 def find_points(ec, q):
     ps = []
     ps.append(None)
     f = Field(q)
     for i in range(q):
         iq = ec.find_y_square(i) % q
-        # 0**2 = 0
         if iq == 0:
             ps.append(PT(f(i), f(0)))
+            factors = get_prime_factors(q)
+            if factors[0][1] > 1:
+                for j in range(1, q):
+                    if j*j % q == 0:
+                        ps.append(PT(f(0), f(j)))
         else:
-            r = modular_sqrt(iq, q)
-            if r != 0:
-                ps.append(PT(f(i), f(r)))
-                ps.append(PT(f(i), f(q - r)))
+            try:
+                r = modular_sqrt_for_power(iq, q)
+                if r != 0:
+                    ps.append(PT(f(i), f(r)))
+                    ps.append(PT(f(i), f(q - r)))
+            except (ValueError,):
+                pass
     return ps
 
 

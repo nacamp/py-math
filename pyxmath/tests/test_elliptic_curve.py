@@ -144,13 +144,21 @@ def test_tate_m_exceed_p():
     # print(ec.tate_pairing(P, Q, Q, m) ** 3 + ec.tate_pairing(P, Q, Q, m) ** 3)
     assert p % 4 == 3
 
+
 def test_etc():
     ec = EC([0, 1, 0, 1])
     # not prime
     p = 75
     assert p % 4 == 3
-    assert is_supersingular(ec,p) == False
+    assert is_supersingular(ec, p) == False
     # prime
     p = 71
     assert p % 4 == 3
-    assert is_supersingular(ec,p) == True
+    assert is_supersingular(ec, p) == True
+
+    # 7*7 field
+    # https://graui.de/code/elliptic2/
+    ec = EC([0, 1, 0, 1])
+    p = 7 * 7
+    points = find_points(ec, p)
+    assert len(points) == 50
