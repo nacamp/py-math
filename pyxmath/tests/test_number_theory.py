@@ -65,6 +65,6 @@ def test_rmod():
 
 
 def test_modular_sqrt_for_power():
-    assert modular_sqrt_for_power(30, 49) == 31
-    assert modular_sqrt_for_power(13290059, 127 ** 2) == 14109
+    assert modular_sqrt_for_square_of_prime(30, 7**2) == 31
+    assert modular_sqrt_for_square_of_prime(13290059, 127 ** 2) == 14109
     # https://math.stackexchange.com/questions/95443/how-to-compute-modular-square-roots-when-modulus-is-non-prime

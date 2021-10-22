@@ -145,12 +145,14 @@ def frob_end_pi(r, q, exp=1):
     return r ** (q ** exp) % q
 
 
-def modular_sqrt_for_power(a, p):
+def modular_sqrt_for_square_of_prime(a, p):
     p_2 = p
     f = get_prime_factors(p_2)
     if len(f) > 1:
-        raise ValueError(f'{p_2} is not prime')
-    if f[0][1] > 1:
+        raise ValueError(f'{p} is not prime or square of prime')
+    if f[0][1] == 1:
+        return modular_sqrt(a, p)
+    elif f[0][1] == 2:
         p_1 = f[0][0]
         mod_p_1 = a % p_1
         mod_p_2 = a % p_2
@@ -163,12 +165,12 @@ def modular_sqrt_for_power(a, p):
         rhs = (b_2 - b_1 ** 2) / p_1
         try:
             m = inv(lhs, p_1) * rhs % p_1
-            return int(b_1 + m*p_1)
+            return int(b_1 + m * p_1)
         except Exception as e:
             raise ValueError(
                 f'{a} is not invertible for the given modulus {p}')
     else:
-        return modular_sqrt(a, p)
+        raise ValueError(f'{p} is not prime or square of prime')
 
 
 # https://gist.github.com/nakov/60d62bdf4067ea72b7832ce9f71ae079
