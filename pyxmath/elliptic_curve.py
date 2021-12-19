@@ -150,7 +150,7 @@ def find_points(ec, q):
                         ps.append(PT(f(0), f(j)))
         else:
             try:
-                r = modular_sqrt_for_power(iq, q)
+                r = modular_sqrt_for_square_of_prime(iq, q)
                 if r != 0:
                     ps.append(PT(f(i), f(r)))
                     ps.append(PT(f(i), f(q - r)))
