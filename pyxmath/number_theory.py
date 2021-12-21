@@ -186,6 +186,8 @@ def modular_sqrt(a, p):
             Returns 1 if a has a square root modulo
             p, -1 otherwise.
         """
+        # https://brilliant.org/wiki/legendre-symbol/
+        # https://ko.wikipedia.org/wiki/르장드르_기호
         ls = pow(a, (p - 1) // 2, p)
         return -1 if ls == p - 1 else ls
 
@@ -215,7 +217,7 @@ def modular_sqrt(a, p):
         return p
     elif p % 4 == 3:
         return pow(a, (p + 1) // 4, p)
-
+    #Q2^s => s2^e
     # Partition p-1 to s * 2^e for an odd s (i.e.
     # reduce all the powers of 2 from p-1)
     #
@@ -228,7 +230,7 @@ def modular_sqrt(a, p):
     # Find some 'n' with a legendre symbol n|p = -1.
     # Shouldn't take long.
     #
-    n = 2
+    n = 2 #z
     while legendre_symbol(n, p) != -1:
         n += 1
 
@@ -247,10 +249,10 @@ def modular_sqrt(a, p):
     # both a and b
     # r is the exponent - decreases with each update
     #
-    x = pow(a, (s + 1) // 2, p)
-    b = pow(a, s, p)
-    g = pow(n, s, p)
-    r = e
+    x = pow(a, (s + 1) // 2, p) #R
+    b = pow(a, s, p) #t
+    g = pow(n, s, p) #c
+    r = e #S
 
     while True:
         t = b
