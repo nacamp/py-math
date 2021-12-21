@@ -322,7 +322,6 @@ def p57():
     assert poly([0, 28]) * poly([0, 1]) == poly([31, 0])
     assert poly([0, 31]) * poly([0, 1]) == poly([28, 0])
 
-
 def p61():
     print(inspect.stack()[0][3], '>>>>>')
     q = 11
@@ -330,27 +329,31 @@ def p61():
     # assert is_supersingular(ec, q) == True
     points = find_points(ec, q)
     order = len(points)
-    print('points : ', points)
+    print('E points : ', points)
     print(f'order = {order} = {get_prime_factors(order)}')
     print('r = ', end='')
     for i in get_prime_factors(order):
         print(i[0], end=',')
     print('')
+
+    q = 11
+    ec = EC([-4, 0, 0, 1])  # y2=x3+4w6, w2+1=0 w2= -1, w6=(u2)**3=-1
+    # TODO EC([4*poly([-1,0]), 0, 0, 1]) # y2=x3+4poly([-1,0])
+    points = find_points(ec, q)
+    print('E\', points : ', points)
+
     # distortion
     poly = FiniteMonoPolynomial([1, 0, 1], q)
     pt1 = [3, 10]
-    pt2 = [poly([8, 0]), poly([0, 1])]  #twist
-    # psi-1
-    assert pt2[0] * (-1) == poly(pt1[0])
-    assert pt2[1] * poly([0, 1]) == poly([pt1[1], 0])
-    # psi
-    assert pt1[0] * (-1) % q == pt2[0]
-    assert pt1[1] * -poly([0, 1]) == pt2[1]
+    pt2 = [poly([8, 0]), poly([0, 1])]  # twist
 
-    q = 11
-    ec = EC([-4, 0, 0, 1]) # y2=x3+4u2, u2+1=0 u2= -1
-    points = find_points(ec, q)
-    print('points : ', points)
+    # x=w=[0,1], x2=w2=[0,1]*[0,1]=[-1,0]
+    # E' -> E,  (x/w2, y/w3)
+    assert pt2[0] * (-1) == poly(pt1[0])  # x/w2
+    assert pt2[1] / -poly([0, 1]) == poly([pt1[1], 0])  # y/w3
+    # E -> E' (w2x, w3y)
+    assert pt1[0] * (-1) % q == pt2[0]   # w2x
+    assert pt1[1] * -poly([0, 1]) == pt2[1]  # w3y
 
 def p62():
     print(inspect.stack()[0][3], '>>>>>')
@@ -365,23 +368,12 @@ def p62():
     for i in get_prime_factors(order):
         print(i[0], end=',')
     print('')
-    # distortion
-    poly = FiniteMonoPolynomial([2, 0, 0, 0, 0, 0, 1], q)
-    pt = PT(poly([0, 0, 0, 0, 35, 0]), poly([0, 0, 0, 42, 0, 0]) )
-    for i in range(1, 1000):
-        npt = ec.mul(pt, i)
-        if npt is None:
-            break
-        print(npt)
-        x_1 = npt.x * poly([0, 0, 1, 0, 0, 0])
-        y_1 = npt.y * poly([0, 0, 0, 1, 0, 0])
-        print('  ', x_1 ,  y_1 )
-        print('  ', x_1.val_coefs[0] / poly([0, 0, 1, 0, 0, 0]) ,  y_1.val_coefs[0] / poly([0, 0, 0, 1, 0, 0]) )
 
     q = 103
-    ec = EC([-72*2, 0, 0, 1]) # y2=x3+72u6, u6+1=0 u26= -2
+    ec = EC([-72 * 2, 0, 0, 1])  # y2=x3+72w6, w6+2=0 w6= -2
+    # TODO EC([72*2*poly([-1,0,0,0,0,0]), 0, 0, 1 ]) y2=x3+72*2poly([-1,0,0,0,0,0])
     points = find_points(ec, q)
-    print('points : ', points)
+    print('E\',points : ', points)
     print(len(points))
     f = Field(q)
     pt = PT(f(33), f(19))
@@ -390,6 +382,22 @@ def p62():
         if npt is None:
             break
         print(npt)
+
+    # distortion
+    poly = FiniteMonoPolynomial([2, 0, 0, 0, 0, 0, 1], q)
+    pt = PT(poly([0, 0, 0, 0, 35, 0]), poly([0, 0, 0, 42, 0, 0]))
+    for i in range(1, 1000):
+        npt = ec.mul(pt, i)
+        if npt is None:
+            break
+        print(npt)
+        # x2=w2=[0,0,1,0,0,0], x3=w3=[0,0,0,1,0,0],
+        # E -> E' (w2x, w3y)
+        x_1 = npt.x * poly([0, 0, 1, 0, 0, 0])
+        y_1 = npt.y * poly([0, 0, 0, 1, 0, 0])
+        print('E\' ', x_1, y_1)
+        # E' -> E,  (x/w2, y/w3)
+        print('E  ', x_1.val_coefs[0] / poly([0, 0, 1, 0, 0, 0]), y_1.val_coefs[0] / poly([0, 0, 0, 1, 0, 0]))
 
 def p69():
     print(inspect.stack()[0][3], '>>>>>')
