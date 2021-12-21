@@ -94,9 +94,13 @@ g, g_order = _max_gen(ec, p)
 # g = PT(f(11), f(8))
 
 poly = FiniteMonoPolynomial([1, 0, 1], p)
-# TODO find torsion in poly
-h = PT(poly([60, 0]), poly([0, 8]))
+poly.elements()
 
+# distortion (-x, iy)
+h_x = g.x * (-1)
+h_y = g.y * poly([0, 1])
+#h = PT(poly([60, 0]), poly([0, 8]))
+h = PT(poly([h_x.n, 0]), h_y)
 # tau
 # # 실패 metlab도 동일
 # alpha = 4685
@@ -181,10 +185,10 @@ rval = Zx_val * Hx_val % q
 assert lval == rval
 
 # prove
-r = 3421
-s = 3819
 r = 1 + randrange(q - 1)
 s = 1 + randrange(q - 1)
+r = 3421
+s = 3819
 
 Proof_A = sigma1_1[0]
 for i in range(NumWires):
@@ -234,6 +238,7 @@ assert Proof_C == ec.mul(g, C)
 
 # verify
 # m cannot exceed p
+m = g_order
 if g_order > p:
     m = p
 LHS = ec.tate_pairing(Proof_A, Proof_B, Proof_B, m)
