@@ -121,6 +121,10 @@ class EC:
         # fp(q+s)/fp(s)
         return self.miller(p, self.add(q, s), ms) / self.miller(p, s, ms)
 
+    def is_on_curve(self, p1):
+        if p1 is None:
+            return True
+        return p1.y**2 - p1.x**3 - self.coefs[0] == 0
 
 # https://en.wikipedia.org/wiki/Supersingular_elliptic_curve
 def is_supersingular(ec, p):
