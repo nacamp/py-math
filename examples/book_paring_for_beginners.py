@@ -338,12 +338,24 @@ def p61():
     print('')
 
     q = 11
-    ec = EC([-4, 0, 0, 1])  # y2=x3+4w6, w2+1=0 w2= -1, w6=(u2)**3=-1
+    ec1 = EC([-4, 0, 0, 1])  # y2=x3+4w6, w2+1=0 w2= -1, w6=(u2)**3=-1
     # TODO EC([4*poly([-1,0]), 0, 0, 1]) # y2=x3+4poly([-1,0])
-    points = find_points(ec, q)
-    print('E\', points : ', points)
+    points = find_points(ec1, q)
+    # print('E\', points : ', points)
+    print(f'E\',points : {r_torsion(ec1, points, 3)}')
 
-    # distortion
+    f = Field(q)
+    poly = FiniteMonoPolynomial([1, 0, 1], q)
+    print('\nfind E/q2')
+    pt = PT(f(3), f(1))
+    for i in range(1, 1000):
+        npt = ec1.mul(pt, i)
+        if npt is None:
+            break
+        print(npt, end=' => ')
+        print(npt.x * poly([-1, 0]), npt.y * -poly([0, 1]))
+
+    'distortion'
     poly = FiniteMonoPolynomial([1, 0, 1], q)
     pt1 = [3, 10]
     pt2 = [poly([8, 0]), poly([0, 1])]  # twist
@@ -375,22 +387,26 @@ def p62():
     ec1 = EC([-72 * 2, 0, 0, 1])  # y2=x3+72w6, w6+2=0 w6= -2
     # TODO EC([72*2*poly([-1,0,0,0,0,0]), 0, 0, 1 ]) y2=x3+72*2poly([-1,0,0,0,0,0])
     points = find_points(ec1, q)
-    print('E\',points : ', points)
-    print(len(points))
+    # print('E\',points : ', points)
+    print(f'E\',points : {r_torsion(ec, points, 7)}')
+
     f = Field(q)
+    poly = FiniteMonoPolynomial([2, 0, 0, 0, 0, 0, 1], q)
+    ec2 = EC([72 * 2 * poly([-1, 0, 0, 0, 0, 0]), 0, 0, 1])
+    assert ec1.is_on_curve(PT(f(33), f(19)))
+    assert ec2.is_on_curve(PT(f(33), f(19)))
+    assert ec2.is_on_curve(PT(poly([0, 0, 101, 0, 0, 0]), poly([0, 0, 0, 8, 0, 0])))
+
+    print('\nfind E/q6')
     pt = PT(f(33), f(19))
     for i in range(1, 1000):
         npt = ec1.mul(pt, i)
         if npt is None:
             break
-        print(npt)
+        print(npt, end=' => ')
+        print(npt.x / poly([0, 0, 1, 0, 0, 0]), npt.y / poly([0, 0, 0, 1, 0, 0]))
 
-    poly = FiniteMonoPolynomial([2, 0,0,0,0,0, 1], q)
-    ec2 = EC([72*2*poly([-1,0,0,0,0,0]), 0, 0, 1 ])
-    assert ec2.is_on_curve(PT(f(33), f(19)))
-    assert ec2.is_on_curve(PT(poly([0, 0, 101, 0, 0, 0]), poly([0, 0, 0, 8, 0, 0])))
-
-    # distortion
+    print('\ndistortion')
     pt = PT(poly([0, 0, 0, 0, 35, 0]), poly([0, 0, 0, 42, 0, 0]))
     assert ec.is_on_curve(pt)
     for i in range(1, 1000):
@@ -406,6 +422,7 @@ def p62():
         # E' -> E,  (x/w2, y/w3)
         print('E  ', x_1.val_coefs[0] / poly([0, 0, 1, 0, 0, 0]), y_1.val_coefs[0] / poly([0, 0, 0, 1, 0, 0]))
     # not use b in calculating mul,add in y2=x3+ax+b
+
 
 def p69():
     print(inspect.stack()[0][3], '>>>>>')
@@ -472,7 +489,7 @@ def p78():
     assert ec.tate_pairing(P, Q, R, m) ** 287040 == [39, 45, 43, 33]
 
 
-p62()
+p61()
 
 # TODO p32
 '''
