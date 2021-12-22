@@ -322,6 +322,7 @@ def p57():
     assert poly([0, 28]) * poly([0, 1]) == poly([31, 0])
     assert poly([0, 31]) * poly([0, 1]) == poly([28, 0])
 
+
 def p61():
     print(inspect.stack()[0][3], '>>>>>')
     q = 11
@@ -352,8 +353,9 @@ def p61():
     assert pt2[0] * (-1) == poly(pt1[0])  # x/w2
     assert pt2[1] / -poly([0, 1]) == poly([pt1[1], 0])  # y/w3
     # E -> E' (w2x, w3y)
-    assert pt1[0] * (-1) % q == pt2[0]   # w2x
+    assert pt1[0] * (-1) % q == pt2[0]  # w2x
     assert pt1[1] * -poly([0, 1]) == pt2[1]  # w3y
+
 
 def p62():
     print(inspect.stack()[0][3], '>>>>>')
@@ -370,22 +372,27 @@ def p62():
     print('')
 
     q = 103
-    ec = EC([-72 * 2, 0, 0, 1])  # y2=x3+72w6, w6+2=0 w6= -2
+    ec1 = EC([-72 * 2, 0, 0, 1])  # y2=x3+72w6, w6+2=0 w6= -2
     # TODO EC([72*2*poly([-1,0,0,0,0,0]), 0, 0, 1 ]) y2=x3+72*2poly([-1,0,0,0,0,0])
-    points = find_points(ec, q)
+    points = find_points(ec1, q)
     print('E\',points : ', points)
     print(len(points))
     f = Field(q)
     pt = PT(f(33), f(19))
     for i in range(1, 1000):
-        npt = ec.mul(pt, i)
+        npt = ec1.mul(pt, i)
         if npt is None:
             break
         print(npt)
 
+    poly = FiniteMonoPolynomial([2, 0,0,0,0,0, 1], q)
+    ec2 = EC([72*2*poly([-1,0,0,0,0,0]), 0, 0, 1 ])
+    assert ec2.is_on_curve(PT(f(33), f(19)))
+    assert ec2.is_on_curve(PT(poly([0, 0, 101, 0, 0, 0]), poly([0, 0, 0, 8, 0, 0])))
+
     # distortion
-    poly = FiniteMonoPolynomial([2, 0, 0, 0, 0, 0, 1], q)
     pt = PT(poly([0, 0, 0, 0, 35, 0]), poly([0, 0, 0, 42, 0, 0]))
+    assert ec.is_on_curve(pt)
     for i in range(1, 1000):
         npt = ec.mul(pt, i)
         if npt is None:
@@ -398,6 +405,7 @@ def p62():
         print('E\' ', x_1, y_1)
         # E' -> E,  (x/w2, y/w3)
         print('E  ', x_1.val_coefs[0] / poly([0, 0, 1, 0, 0, 0]), y_1.val_coefs[0] / poly([0, 0, 0, 1, 0, 0]))
+    # not use b in calculating mul,add in y2=x3+ax+b
 
 def p69():
     print(inspect.stack()[0][3], '>>>>>')
