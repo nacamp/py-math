@@ -131,13 +131,18 @@ def is_supersingular(ec, p):
     f = get_prime_factors(p)
     if len(f) > 1 or f[0][1] > 1:
         return False
-    if p % 4 != 3:
-        return False
-    points = find_points(ec, p)
-    if len(points) == p + 1:
-        return True
-    else:
-        return False
+    if p % 3 == 2:
+        if ec.coefs[1] == 0:
+            return True
+    if p % 4 == 3:
+        if ec.coefs[0] == 0:
+            return True
+    return False
+    # points = find_points(ec, p)
+    # if len(points) == p + 1:
+    #     return True
+    # else:
+    #     return False
 
 def find_points(ec, q):
     ps = []
