@@ -4,13 +4,19 @@ from pyxmath.number_theory import *
 
 
 class EC:
-    def __init__(self, coefs):
+    def __init__(self, coefs, coordinates='affine'):
         self.coefs = coefs
+        self.coordinates = coordinates
 
     def neg(self, p1):
         return -p1
 
     def add(self, p1, p2):
+        if self.coordinates == 'jacobian':
+            return self._add_at_jacobian(p1, p2)
+        elif self.coordinates == 'projective':
+            return self._add_at_projective(p1, p2)
+
         if p1 is None or p2 is None:
             return p1 if p2 is None else p2
         if p1 is None or p2 is None:
@@ -28,6 +34,47 @@ class EC:
         x = l ** 2 - p1.x - p2.x
         y = -l * x + l * p1.x - p1.y
         return PT(x, y)
+
+    def _add_at_projective(self, p1, p2):
+        if p1 is None or p2 is None:
+            return p1 if p2 is None else p2
+        if p1 is None or p2 is None:
+            return p1 if p2 is None else p2
+
+        if p2.x == p1.x and p2.y == p1.y and p2.z == p1.z:
+            return self._double_at_projective(p1)
+        elif p2.x == p1.x and p2.y == (-p1.y):
+            return None
+        else:
+            u = p2.y * p1.z - p1.y * p2.z
+            v = p2.x * p1.z - p1.x * p2.z
+            w = u ** 2 * p1.z * p2.z - v ** 3 - 2 * v ** 2 * p1.x * p2.z
+            x = v * w
+            y = u * (v ** 2 * p1.x * p2.z - w) - v ** 3 * (p1.y * p2.z)
+            z = v ** 3 * p1.z * p2.z
+            return PT(x, y, z)
+
+    def _add_at_jacobian(self, p1, p2):
+        if p1 is None or p2 is None:
+            return p1 if p2 is None else p2
+        if p1 is None or p2 is None:
+            return p1 if p2 is None else p2
+
+        if p2.x == p1.x and p2.y == p1.y and p2.z == p1.z:
+            return self._double_at_jacobian(p1)
+        elif p2.x == p1.x and p2.y == (-p1.y):
+            return None
+        else:
+            r = p1.x * p2.z ** 2
+            s = p2.x * p1.z ** 2
+            t = p1.y * p2.z ** 3
+            u = p2.y * p1.z ** 3
+            v = s - r
+            w = u - t
+            x = -v ** 3 - 2 * r * v ** 2 + w ** 2
+            y = -t * v ** 3 + (r * v ** 2 - x) * w
+            z = v * p1.z * p2.z
+            return PT(x, y, z)
 
     def sub(self, p1, p2):
         p2_copy = p2.copy()
@@ -47,6 +94,10 @@ class EC:
             return self.add(self.mul(self.double(p1), int(n // 2)), p1)
 
     def double(self, p1):
+        if self.coordinates == 'jacobian':
+            return self._double_at_jacobian(p1)
+        elif self.coordinates == 'projective':
+            return self._double_at_projective(p1)
         a = self.coefs[1]
         y2 = 2 * p1.y
         if y2 == 0:
@@ -55,6 +106,26 @@ class EC:
         x = l ** 2 - 2 * p1.x
         y = -l * x + l * p1.x - p1.y
         return PT(x, y)
+
+    def _double_at_projective(self, p1):
+        a = self.coefs[1]
+        t = a * p1.z ** 2 + 3 * p1.x ** 2
+        u = p1.y * p1.z
+        v = u * p1.x * p1.y
+        w = t ** 2 - 8 * v
+        x = 2 * u * w
+        y = t * (4 * v - w) - 8 * p1.y ** 2 * u ** 2
+        z = 8 * u ** 3
+        return PT(x, y, z)
+
+    def _double_at_jacobian(self, p1):
+        a = self.coefs[1]
+        v = 4 * p1.x * p1.y ** 2
+        w = 3 * p1.x ** 2 + a * p1.z ** 4
+        x = -2 * v + w ** 2
+        y = -8 * p1.y ** 4 + (v - x) * w
+        z = 2 * p1.y * p1.z
+        return PT(x, y, z)
 
     def find_y_square(self, p_x):
         y = 0
@@ -124,7 +195,8 @@ class EC:
     def is_on_curve(self, p1):
         if p1 is None:
             return True
-        return p1.y**2 - p1.x**3 - self.coefs[0] == 0
+        return p1.y ** 2 - p1.x ** 3 - self.coefs[0] == 0
+
 
 # https://en.wikipedia.org/wiki/Supersingular_elliptic_curve
 def is_supersingular(ec, p):
@@ -144,6 +216,7 @@ def is_supersingular(ec, p):
     # else:
     #     return False
 
+
 def find_points(ec, q):
     ps = []
     ps.append(None)
@@ -155,7 +228,7 @@ def find_points(ec, q):
             factors = get_prime_factors(q)
             if factors[0][1] > 1:
                 for j in range(1, q):
-                    if j*j % q == 0:
+                    if j * j % q == 0:
                         ps.append(PT(f(0), f(j)))
         else:
             try:

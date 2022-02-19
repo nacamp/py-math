@@ -1,12 +1,26 @@
 import math
 
+
 class PT():
-    def __init__(self, x, y):
+    def __init__(self, x, y, z=None):
         self.x = x
         self.y = y
+        self.z = z
+
+    def to_projective(self):
+        return self.__class__(self.x, self.y, 1)
+
+    def to_projective(self):
+        return self.__class__(self.x, self.y, 1)
+
+    def to_affine_from_projective(self):
+        return self.__class__(self.x / self.z, self.y / self.z)
+
+    def to_affine_from_jacobian(self):
+        return self.__class__(self.x / self.z ** 2, self.y / self.z ** 3)
 
     def __repr__(self):
-        return repr([self.x, self.y])
+        return repr([self.x, self.y, self.z])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -64,5 +78,6 @@ def get_prime_factors(n):
         if count > 0:
             factors.append((p, count))
     return factors
+
 
 __all__ = ['PT', 'prime_sieve', 'get_prime_factors']
