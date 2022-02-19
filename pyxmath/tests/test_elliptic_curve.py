@@ -28,6 +28,50 @@ def test_field():
     assert len(find_points(ec, p)) == 105
 
 
+# @pytest.mark.skip(reason=".")
+def test_at_projective_jacobian_coordinates():
+    ec = EC([1, 1, 0, 1])
+    ec_p = EC([1, 1, 0, 1], 'projective')
+    ec_j = EC([1, 1, 0, 1], 'jacobian')
+    p = 101
+    f = F(p)
+    add1 = ec._add_at_projective(PT(f(47), f(12)).to_projective(), PT(f(47), f(12)).to_projective())
+    add2 = ec._add_at_projective(PT(f(47), f(12)).to_projective(), add1)
+    assert add1.to_affine_from_projective() == PT(f(6), f(83))
+    assert ec_p.add(PT(f(47), f(12)).to_projective(), PT(f(47), f(12)).to_projective()) == add1
+    assert add2.to_affine_from_projective() == PT(f(23), f(77))
+    assert ec_p.mul(PT(f(47), f(12)).to_projective(), 2).to_affine_from_projective() == add1.to_affine_from_projective()
+    assert ec_p.mul(PT(f(47), f(12)).to_projective(), 3).to_affine_from_projective() == add2.to_affine_from_projective()
+    # not same
+    # assert ec_p.mul(PT(f(47), f(12)).to_projective(), 3) == add2
+
+    add1 = ec._add_at_jacobian(PT(f(47), f(12)).to_projective(), PT(f(47), f(12)).to_projective())
+    add2 = ec._add_at_jacobian(PT(f(47), f(12)).to_projective(), add1)
+    assert add1.to_affine_from_jacobian() == PT(f(6), f(83))
+    assert ec_j.add(PT(f(47), f(12)).to_projective(), PT(f(47), f(12)).to_projective()) == add1
+    assert add2.to_affine_from_jacobian() == PT(f(23), f(77))
+    assert ec_j.mul(PT(f(47), f(12)).to_projective(), 2).to_affine_from_jacobian() == add1.to_affine_from_jacobian()
+    assert ec_j.mul(PT(f(47), f(12)).to_projective(), 3).to_affine_from_jacobian() == add2.to_affine_from_jacobian()
+    # not same
+    # assert ec_j.mul(PT(f(47), f(12)).to_projective(), 3) == add2
+
+    ec = EC([1, 0, 0, 1])
+    ec_j = EC([1, 0, 0, 1], 'jacobian')
+    p = 7691
+    poly = FiniteMonoPolynomial([1, 0, 1], p)
+
+    Q = PT(poly([6145, 633]), poly([109, 7372]))
+    assert ec.add(Q, Q) == PT(poly([2096, 4448]), poly([6039, 7386]))
+    assert ec.add(Q, Q) == ec_j.add(Q.to_projective(), Q.to_projective()).to_affine_from_jacobian()
+    # assert ec._add_at_projective(Q.to_projective(),Q.to_projective()).to_affine_from_projective() == PT(poly([2096, 4448]), poly([6039, 7386]))
+    # #
+
+    assert ec_j.add(Q.to_projective(),
+                    PT(poly([2096, 4448]), poly([6039, 7386])).to_projective()).to_affine_from_jacobian() == PT(
+        poly([619, 6652]), poly([1174, 2367]))
+    assert ec_j.mul(Q.to_projective(), 135).to_affine_from_jacobian() == PT(poly([1403, 5806]), poly([2370, 6091]))
+
+
 def test_poly():
     ec = EC([1, 0, 0, 1])
     p = 7691
@@ -146,7 +190,7 @@ def test_tate_m_exceed_p():
 
 
 def test_etc():
-    #is_supersingular
+    # is_supersingular
     ec = EC([0, 1, 0, 1])
     # not prime
     p = 75
@@ -164,7 +208,6 @@ def test_etc():
     p = 5
     assert p % 3 == 2
     assert is_supersingular(ec, p)
-
 
     # 7*7 field
     # https://graui.de/code/elliptic2/
