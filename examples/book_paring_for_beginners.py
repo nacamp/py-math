@@ -70,11 +70,47 @@ def p22():
 def p23():
     print(inspect.stack()[0][3], '>>>>>')
     ec = EC([100, 905, 0, 1])
-    p = 1021
-    points = find_points(ec, p)
+    q = 1021
+    points = find_points(ec, q)
     order = len(points)
     print('points : ', points)
     print('order : ', order)
+    f = Field(q)
+    P = PT(f(1006), f(416))
+    Q = PT(f(612), f(827))
+    print('P2, Q2')
+    P_2 = ec.mul(P, 966 / 2)
+    assert ec.mul(Q, 483) == ec.mul(P_2, 1)
+    print(P_2, ec.mul(Q, 483), ec.mul(P_2, 1))
+    for i in range(1, 2 + 1):
+        print(i, ec.mul(P_2, i))
+
+    print('P3, Q3')
+    P_3 = ec.mul(P, 966 / 3)
+    assert ec.mul(Q, 322) == ec.mul(P_3, 3)
+    print(P_3, ec.mul(Q, 322), ec.mul(P_3, 3))
+    for i in range(1, 3 + 1):
+        print(i, ec.mul(P_3, i))
+        if ec.mul(Q, 322) == ec.mul(P_3, i):
+            break
+
+    print('P7, Q7')
+    P_7 = ec.mul(P, 966 / 7)
+    assert ec.mul(Q, 138) == ec.mul(P_7, 1)
+    print(P_7, ec.mul(Q, 138), ec.mul(P_7, 1))
+    for i in range(1, 7 + 1):
+        print(i, ec.mul(P_7, i))
+
+    print('P23, Q23')
+    P_23 = ec.mul(P, 966 / 23)
+    print(P_23, ec.mul(Q, 42), ec.mul(P_23, 1))
+    for i in range(1, 23 + 1):
+        print(i, ec.mul(P_23, i))
+        if ec.mul(Q, 42) == ec.mul(P_23, i):
+            break
+
+    k = chinese_remainder([2, 3, 7, 23], [1, 0, 1, 20])
+    assert Q == ec.mul(P, k)
 
 
 def p24():
@@ -514,6 +550,7 @@ def p86():
     print(q.bit_length() - r.bit_length())
     print('rho : ', math.log10(q) / math.log10(r))
 
+
 def p88():
     print(inspect.stack()[0][3], '>>>>>')
     ec = EC([314159, 0, 0, 1])
@@ -529,7 +566,8 @@ def p88():
     # rho = math.log10(q) / math.log10(r)
     # print('rho : ', rho)
 
-p88()
+
+p23()
 
 # TODO p32
 '''
