@@ -1,6 +1,7 @@
 import sys
 from fractions import Fraction
 from pyxmath import *
+from functools import reduce
 
 
 def xgcd(a, b):
@@ -217,7 +218,7 @@ def modular_sqrt(a, p):
         return p
     elif p % 4 == 3:
         return pow(a, (p + 1) // 4, p)
-    #Q2^s => s2^e
+    # Q2^s => s2^e
     # Partition p-1 to s * 2^e for an odd s (i.e.
     # reduce all the powers of 2 from p-1)
     #
@@ -230,7 +231,7 @@ def modular_sqrt(a, p):
     # Find some 'n' with a legendre symbol n|p = -1.
     # Shouldn't take long.
     #
-    n = 2 #z
+    n = 2  # z
     while legendre_symbol(n, p) != -1:
         n += 1
 
@@ -249,10 +250,10 @@ def modular_sqrt(a, p):
     # both a and b
     # r is the exponent - decreases with each update
     #
-    x = pow(a, (s + 1) // 2, p) #R
-    b = pow(a, s, p) #t
-    g = pow(n, s, p) #c
-    r = e #S
+    x = pow(a, (s + 1) // 2, p)  # R
+    b = pow(a, s, p)  # t
+    g = pow(n, s, p)  # c
+    r = e  # S
 
     while True:
         t = b
@@ -270,3 +271,13 @@ def modular_sqrt(a, p):
         x = (x * gs) % p
         b = (b * g) % p
         r = m
+
+
+# https://medium.com/analytics-vidhya/chinese-remainder-theorem-using-python-25f051e391fc
+def chinese_remainder(m, a):
+    sum = 0
+    prod = reduce(lambda acc, b: acc * b, m)
+    for n_i, a_i in zip(m, a):
+        p = prod // n_i
+        sum += a_i * inv(p, n_i) * p
+    return sum % prod

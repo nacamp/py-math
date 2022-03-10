@@ -71,3 +71,8 @@ def test_modular_sqrt_for_power():
     assert modular_sqrt_for_square_of_prime(30, 7**2) == 31
     assert modular_sqrt_for_square_of_prime(13290059, 127 ** 2) == 14109
     # https://math.stackexchange.com/questions/95443/how-to-compute-modular-square-roots-when-modulus-is-non-prime
+
+def test_chinese_remainder():
+    m = [2, 3, 7, 23]
+    a = [1, 0, 1, 20]
+    assert chinese_remainder(m, a) == 687
