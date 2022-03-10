@@ -25,6 +25,8 @@ class PT():
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             return self.x == other.x and self.y == other.y
+        elif other is None:
+            return False
         else:
             return self.x == other[0] and self.y == other[1]
 
