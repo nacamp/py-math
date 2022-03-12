@@ -153,19 +153,45 @@ def p26():
 
 def p27():
     print(inspect.stack()[0][3], '>>>>>')
-    # E_3
-    # q distortion map
-    q = 19
-    f = Field(q)
-    assert f(7) == 7
-    assert f(7) * f(7) == 11
-    assert f(7) * f(7) * f(7) == 1
+    P = (-1, 2)
 
-    # q^2 distortion map
+    # (x,y) -> (7x, y)
+    q = 19
+    ec = EC([5, 0, 0, 1])
+    e = find_points(ec, q)
+    for p in e:
+        if p is not None:
+            p.x = p.x * 7 % q
+            if not ec.is_on_curve(p):
+                print('not exist')
+
+    # endomorphism
+    f = Field(q)
+    ksi_3 = 7
+    ksi = PT(ksi_3 * P[0], f(2))
+    print(ksi, ec.is_on_curve(ksi))
+
+    # automorphism
+    ksi_2 = 11
+    ksi_inv = PT(ksi_2 * ksi.x, f(2))
+    ksi_inv.x %= q
+    assert ksi_inv.x == P[0] % q
+    print((ksi_inv.x - q, ksi_inv.y), ec.is_on_curve(ksi_inv))
+
+    # (x,y) -> ((8u+11)x, y)
+    # endomorphism
     q = 23
     poly = FiniteMonoPolynomial([1, 0, 1], q)
-    assert poly([11, 8]) * poly([11, 8]) == [11, 15]
-    assert poly([11, 8]) * poly([11, 8]) * poly([11, 8]) == [1, 0]
+    ksi_3 = poly([11, 8])
+    ksi = PT(ksi_3 * P[0], poly([2, 0]))
+    print(ksi, ec.is_on_curve(ksi))
+
+    # automorphism
+    ksi_2 = poly([11, 15])
+    ksi_inv = PT(ksi_2 * ksi.x, poly([2, 0]))
+    assert ksi_inv.x == P[0] % q
+    ksi_inv.x.val_coefs[0] -= q
+    print(ksi_inv, ec.is_on_curve(ksi))
 
 
 def p29():
@@ -567,7 +593,7 @@ def p88():
     # print('rho : ', rho)
 
 
-p23()
+p27()
 
 # TODO p32
 '''
