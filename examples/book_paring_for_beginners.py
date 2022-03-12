@@ -192,6 +192,42 @@ def p27():
     assert ksi_inv.x == P[0] % q
     ksi_inv.x.val_coefs[0] -= q
     print(ksi_inv, ec.is_on_curve(ksi))
+    # https://www.mathphysicsbook.com/mathematics/mathematical-structures/defining-mathematical-structures-and-mappings/
+
+
+def p28():
+    print(inspect.stack()[0][3], '>>>>>')
+    q = 67
+    ec = EC([3, 4, 0, 1])
+    points = find_points(ec, q)
+    order = len(points)
+    t = order - (q + 1)
+
+    f = Field(q)
+    P1 = PT(f(15), f(50))
+    for t in range(int(-2 * math.sqrt(q)), int(2 * math.sqrt(q))):
+        if ec.mul(P1, (1 - (-t) + q)) is None:
+            print(f't={t} is found')
+            break
+    print(ec.mul(P1, (1 - (-t) + q)))
+    assert frob_end_pi(P1.x, q, 1) == P1.x
+    assert frob_end_pi(P1.y, q, 1) == P1.y
+    assert frob_end_pi(P1.x, q, 2) == P1.x
+    assert frob_end_pi(P1.y, q, 2) == P1.y
+
+    poly = FiniteMonoPolynomial([1, 0, 1], q)
+    P2 = PT(poly([16, 2]), poly([39, 30]))
+    print(ec.add(
+        ec.mul(PT(frob_end_pi(P2.x, q, 1), frob_end_pi(P2.y, q, 1)), t),
+        ec.mul(P2, 68)))
+
+    poly = FiniteMonoPolynomial([2, 0, 0, 1], q)
+    P3 = PT(poly([8, 4, 15]), poly([21, 30, 44]))
+    print(ec.add(ec.add(
+        ec.mul(PT(frob_end_pi(P3.x, q, 2), frob_end_pi(P3.y, q, 2)), 1),
+        ec.mul(PT(frob_end_pi(P3.x, q, 1), frob_end_pi(P3.y, q, 1)), t)),
+        ec.mul(P3, 67)
+    ))
 
 
 def p29():
@@ -593,7 +629,7 @@ def p88():
     # print('rho : ', rho)
 
 
-p27()
+p28()
 
 # TODO p32
 '''
