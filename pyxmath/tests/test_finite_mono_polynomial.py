@@ -4,6 +4,20 @@ from pyxmath.finite_mono_polynomial import *
 
 
 # @pytest.mark.skip(reason=".")
+
+def test_eq():
+    q = 11
+    poly = FiniteMonoPolynomial([1, 0, 1], q)
+    assert poly([8, 0]) == poly([8])
+
+
+def test_pow():
+    q = 11
+    poly = FiniteMonoPolynomial([1, 0, 1], q)
+    P = PT(poly([8, 0]), poly([0, 1]))
+    assert frob_end_pi(P.x, q, 1) == P.x
+
+
 def test_add_sub():
     poly = FiniteMonoPolynomial([4, 1, 0, 1], 11)
     with pytest.raises(ValueError):
@@ -99,10 +113,11 @@ def test_etc():
     assert poly([1, 0, 1]).neg() == [2, 0, 2]
     assert -poly([1, 0, 1]) == [2, 0, 2]
 
+
 def test_element():
     q = 3
     poly = FiniteMonoPolynomial([1, 0, 0, 1], q)
     pts = poly.elements()
     # assert len(pts) == q**2
-    assert len(pts) == 3*3*3
+    assert len(pts) == 3 * 3 * 3
     # assert  pts == 3*3*3
