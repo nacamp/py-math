@@ -189,7 +189,15 @@ class FiniteMonoPolynomial():
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return self.val_coefs == other.val_coefs
+            aa = list(self.val_coefs[:])
+            bb = list(other.val_coefs[:])
+            for i in range(max(len(self.val_coefs), len(other.val_coefs))):
+                if len(aa) == i:
+                    aa.append(0)
+                if len(bb) == i:
+                    bb.append(0)
+            return aa == bb
+            # self.val_coefs == other.val_coefs
         else:
             return self.val_coefs == self.change_to_coefs(other)
 
