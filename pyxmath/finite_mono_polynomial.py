@@ -255,3 +255,22 @@ class FiniteMonoPolynomial():
                     break
             coefs.append(self(coef))
         return coefs
+
+    def make_power_representation(self):
+        right_coefs_len = len(self.right_coefs)
+        element = [[1] + [0] * (right_coefs_len - 1)]
+        for i in range(self.q ** right_coefs_len - 2):
+            f = element[i][:]
+            f.insert(0, 0)
+            ms = f.pop(right_coefs_len)
+            if ms != 0:
+                # 최상위 deg의 값이 0이 아니면 하위 deg 식으로 변환 후 식을 더한다.
+                # [ms * irr_coef[0], ms * irr_coef[1], ...] + f
+                new_field = []
+                zip_object = zip([x * ms for x in self.right_coefs], f)
+                for a, b in zip_object:
+                    new_field.append(a + b)
+                element.append([x % self.q for x in new_field])
+            else:
+                element.append([x % self.q for x in f])
+        return element;
