@@ -197,6 +197,12 @@ class EC:
             return True
         return p1.y ** 2 - p1.x ** 3 - self.coefs[0] == 0
 
+    def tr(self, p1, q, deg):
+        _tr = p1
+        for i in range(deg - 1):
+            _tr = self.add(_tr, PT(frob_end_pi(p1.x, q, i + 1), frob_end_pi(p1.y, q, i + 1)))
+        return _tr
+
 
 # https://en.wikipedia.org/wiki/Supersingular_elliptic_curve
 def is_supersingular(ec, p):
