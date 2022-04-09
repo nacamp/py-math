@@ -39,6 +39,35 @@ def g_p_q(p, q, s):
     print(f'x+ {x_p + x_q - (s ** 2)}')
 
 
+def p12():
+    print(inspect.stack()[0][3], '>>>>>')
+    ec = EC([5, 0, 0, 1])
+    p = 13
+    points = find_points(ec, p)
+    print(points[1].to_projective())
+    order = len(points)
+    print('points : ', points)
+    print(f'order = {order} = {get_prime_factors(order)}')
+    # f = Field(101)
+    # print('-------------------')
+    # # P is a generator
+    # P = PT(f(47), f(12))
+    # print(f'{order // 1}-torsion')
+    # print(torsion(ec, P, order // 1))
+    # print('-------------------')
+    # print('r : ')
+    # rs = find_r(order)
+    # print(find_r(order))
+    # print('-------------------')
+    # print(f'{order // 5}-torsion')
+    # order5_p = ec.mul(P, 5)
+    # print(torsion(ec, order5_p, order // 5))
+    # print('-------------------')
+    # print(f'{order // 35}-torsion')
+    # order35_p = ec.mul(P, 35)
+    # print(torsion(ec, order35_p, order // 35))
+
+
 def p22():
     print(inspect.stack()[0][3], '>>>>>')
     ec = EC([1, 1, 0, 1])
@@ -265,6 +294,8 @@ def p37():
     R = PT(f(59), f(95))
     T = PT(f(77), f(84))
 
+    print((59 ** 2 + 70 * 59 + 11) % 103)
+    print((24 ** 2 + 70 * 24 + 11) % 103)
     print('f = 6y+71x2+91x+91 / x2+70x2+11')
     print(f'x2 + {-(P.x + Q.x)}x+{P.x * Q.x}')
     print(f'x2 + {-(R.x + T.x)}x+{R.x * T.x}')
@@ -301,16 +332,39 @@ def p43():
     f = Field(q)
     P = PT(f(43), f(154))
     Q = PT(f(46), f(38))
+    R = PT(f(12), f(35))
+    S = PT(f(5), f(66))
+
     y_p = P.y
     x_p = P.x
-    # x_q = Q.x
     s = ec.slope(P, Q)
     print(f'y +{-s}x + {-y_p + s * x_p}')  # y -y_p -s(x-x_p)
     y_p = P.y
     x_p = P.x
-    # x_q = Q.x
     s = ec.slope(P, P)
     print(f'y +{-s}x + {-y_p + s * x_p}')  # y -y_p -s(x-x_p)
+
+    y_q = Q.y
+    x_q = Q.x
+    s = ec.slope(Q, Q)
+    print(f'y +{-s}x + {-y_q + s * x_q}')  # y -y_p -s(x-x_p)
+
+    # l_p_q(D1)
+    print(((R.y + 93 * R.x + 85) ** 2 * (S.y + 93 * S.x + 85)) % q)
+
+    # l_p_p(D2)
+    print((((R.y + 127 * R.x + 90) ** 3) / ((S.y + 127 * S.x + 90) ** 3)) % q)
+
+    # l_p_p' = 10l_p_p,  g = cf => f(D) = g(D)
+    print(f'{10}y +{127 * 10 % q}x + {90 * 10 % q}')  # 10y +129x + 85
+    print((((10 * R.y + 129 * R.x + 85) ** 3) / ((10 * S.y + 129 * S.x + 85) ** 3)) % q)
+
+
+'''
+(g)=D_g => f(D_g)
+(f)=D_f => g(D_f)
+f(D_g) = g(D_f)
+'''
 
 
 def p48():
@@ -343,26 +397,50 @@ def p51():
     print(f'3-tortion: {r_torsion(ec, points, 3)}')
 
     poly = FiniteMonoPolynomial([1, 0, 1], q)
-    # P = PT(poly([8, 0]), poly([0, 1]))
     print(f'3-tortion: {torsion(ec, PT(poly([8, 0]), poly([0, 1])), q ** 2)}')
     print(f'3-tortion: {torsion(ec, PT(poly([7, 2]), poly([0, 10])), q ** 2)}')
     print(f'3-tortion: {torsion(ec, PT(poly([7, 9]), poly([0, 1])), q ** 2)}')
+    # P = PT(poly([0, 0]), poly([9, 0]))
+    f = Field(q)
+    P = PT(f(0), f(2))
+    Q = PT(poly([8, 0]), poly([0, 1]))
+    print(' ')
+    print(P, Q, ': not in the same subgroup')
+    print('>>>>>>')
+    for i in range(3):
+        for j in range(3):
+            print(ec.add(ec.mul(P, i), ec.mul(Q, j)))
+    print('<<<<<<')
+    P = PT(poly([7, 2]), poly([0, 10]))
+    print(P, Q, ': not in the same subgroup')
+    print('>>>>>>')
+    for i in range(3):
+        for j in range(3):
+            print(ec.add(ec.mul(P, i), ec.mul(Q, j)))
+    print('<<<<<<')
 
 
-def p51():
+def p53():
     print(inspect.stack()[0][3], '>>>>>')
     q = 11
-    ec = EC([4, 0, 0, 1])
+    ec = EC([2, 7, 0, 1])
     points = find_points(ec, q)
-    order = len(points)
     print('points : ', points)
-    print(f'order = {order} = {get_prime_factors(order)}')
-    print(f'3-tortion: {r_torsion(ec, points, 3)}')
+    order = len(points)
+    # r||#E(Fq) the r-torsion subgroup in E(Fq) is unique
+    assert order % 7 == 0
+    assert order % 7 ** 2 != 0
 
-    poly = FiniteMonoPolynomial([1, 0, 1], q)
-    print(f'3-tortion: {torsion(ec, PT(poly([8, 0]), poly([0, 1])), q ** 2)}')
-    print(f'3-tortion: {torsion(ec, PT(poly([7, 2]), poly([0, 10])), q ** 2)}')
-    print(f'3-tortion: {torsion(ec, PT(poly([7, 9]), poly([0, 1])), q ** 2)}')
+    poly = FiniteMonoPolynomial([4, 1, 0, 1], q)
+    elements = poly.make_power_representation()
+    print(elements[481], elements[1049])
+    # Q = PT(poly([4, 7, 4]), poly([6, 2, 10]))
+    Q = PT(poly(elements[481]), poly(elements[1049]))
+    print(ec.tr(Q, q, poly.deg))
+
+    # TODO
+    # G1 = E[r] ∩ Ker(π − [1])
+    # G2 = E[r] ∩ Ker(π − [q])
 
 
 def p56():
@@ -629,7 +707,7 @@ def p88():
     # print('rho : ', rho)
 
 
-p28()
+p53()
 
 # TODO p32
 '''
