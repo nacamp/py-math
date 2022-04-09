@@ -45,7 +45,17 @@ def test_frob_end_pi():
     q = 67
     assert frob_end_pi(15, q, 1) == 15
     assert frob_end_pi(50, q, 1) == 50
+    poly = FiniteMonoPolynomial([1, 0, 1], q)
+    #deg=2
+    P = PT(poly([8, 0]), poly([0, 1]))
+    assert frob_end_pi(P.x, q, poly.deg) == P.x
+    assert frob_end_pi(P.y, q, poly.deg) == P.y
 
+    #deg=3
+    q = 11
+    poly = FiniteMonoPolynomial([4,1,0,1], q)
+    P = PT(poly([4, 7, 4]), poly([6, 2, 10]))
+    assert frob_end_pi(P.x, q, poly.deg) == P.x
 
 def test_yield_operation():
     p = 67
