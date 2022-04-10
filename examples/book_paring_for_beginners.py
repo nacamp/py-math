@@ -437,10 +437,28 @@ def p53():
     # Q = PT(poly([4, 7, 4]), poly([6, 2, 10]))
     Q = PT(poly(elements[481]), poly(elements[1049]))
     print(ec.tr(Q, q, poly.deg))
+    T = PT(poly(elements[1315]), poly(elements[1150]))
+    print(ec.tr(T, q, poly.deg))
+    T = PT(poly(elements[1315]), poly(elements[485]))
+    print(ec.tr(T, q, poly.deg))
 
-    # TODO
-    # G1 = E[r] ∩ Ker(π − [1])
+    atr = ec.add(ec.mul(Q, poly.deg), ec.neg(ec.tr(Q, q, poly.deg)));
+    for i, e in enumerate(elements):
+        if e == atr.x:
+            print(i, atr)
+        if e == atr.y:
+            print(i, atr)
+
+    # G1 = E[r] ∩ Ker(π − [1]), p26,28,55
+    f = Field(q)
+    G1 = PT(f(8), f(8))
+    print('G1: ', ec.sub(PT(frob_end_pi(G1.x, q, 1), frob_end_pi(G1.y, q, 1)),
+                         ec.mul(G1, 1)))
     # G2 = E[r] ∩ Ker(π − [q])
+    G2 = PT(poly(elements[1315]), poly(elements[485]))
+    print('G2 Tr: ', ec.tr(T, q, poly.deg))
+    print('G2: ', ec.sub(PT(frob_end_pi(G2.x, q, 1), frob_end_pi(G2.y, q, 1)),
+                         ec.mul(G2, q)))
 
 
 def p56():
@@ -498,6 +516,16 @@ def p57():
     assert poly([0, 30]) * poly([0, 1]) == poly([29, 0])
     assert poly([0, 28]) * poly([0, 1]) == poly([31, 0])
     assert poly([0, 31]) * poly([0, 1]) == poly([28, 0])
+
+    # G2 = E[r] ∩ Ker(π − [q])
+    G2 = PT(poly([34, 0]), poly([0, 30]))
+    print('G2 Tr: ', ec.tr(G2, q, poly.deg))
+    print('G2: ', ec.sub(PT(frob_end_pi(G2.x, q, 1), frob_end_pi(G2.y, q, 1)),
+                         ec.mul(G2, q)))
+    NOT_G2 = PT(poly([51, 31]), poly([49, 34]))
+    print('NOT_G2 Tr: ', ec.tr(NOT_G2, q, poly.deg))
+    print('NOT_G2: ', ec.sub(PT(frob_end_pi(NOT_G2.x, q, 1), frob_end_pi(NOT_G2.y, q, 1)),
+                         ec.mul(NOT_G2, q)))
 
 
 def p61():
@@ -707,7 +735,7 @@ def p88():
     # print('rho : ', rho)
 
 
-p53()
+p57()
 
 # TODO p32
 '''
