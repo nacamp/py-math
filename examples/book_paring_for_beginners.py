@@ -338,6 +338,7 @@ def p43():
     y_p = P.y
     x_p = P.x
     s = ec.slope(P, Q)
+    # print(f'y +{-s}x + {-y_p}')  # y -y_p -s(x-x_p)
     print(f'y +{-s}x + {-y_p + s * x_p}')  # y -y_p -s(x-x_p)
     y_p = P.y
     x_p = P.x
@@ -525,7 +526,17 @@ def p57():
     NOT_G2 = PT(poly([51, 31]), poly([49, 34]))
     print('NOT_G2 Tr: ', ec.tr(NOT_G2, q, poly.deg))
     print('NOT_G2: ', ec.sub(PT(frob_end_pi(NOT_G2.x, q, 1), frob_end_pi(NOT_G2.y, q, 1)),
-                         ec.mul(NOT_G2, q)))
+                             ec.mul(NOT_G2, q)))
+
+
+'''
+45,46페이지
+103페이지 
+'''
+
+
+def j_inv(A, B):
+    return 1728 * (4 * A ** 3 / (4 * A ** 3 + 27 * B ** 2))
 
 
 def p61():
@@ -551,6 +562,18 @@ def p61():
 
     f = Field(q)
     poly = FiniteMonoPolynomial([1, 0, 1], q)
+
+    G2 = PT(poly([8, 0]), poly([0, 1]))  # twist
+    print('G2 Tr: ', ec.tr(G2, q, poly.deg))
+    print('G2: ', ec.sub(PT(frob_end_pi(G2.x, q, 1), frob_end_pi(G2.y, q, 1)),
+                         ec.mul(G2, q)))
+    NOT_G2 = PT(poly([7, 2]), poly([0, 10]))
+    print('NOT_G2 Tr: ', ec.tr(NOT_G2, q, poly.deg))
+    print('NOT_G2: ', ec.sub(PT(frob_end_pi(NOT_G2.x, q, 1), frob_end_pi(NOT_G2.y, q, 1)),
+                             ec.mul(NOT_G2, q)))
+
+    # Restricting psi to G2
+    # psi
     print('\nfind E/q2')
     pt = PT(f(3), f(1))
     for i in range(1, 1000):
@@ -560,18 +583,33 @@ def p61():
         print(npt, end=' => ')
         print(npt.x * poly([-1, 0]), npt.y * -poly([0, 1]))
 
-    'distortion'
+    'distortion psi'
     poly = FiniteMonoPolynomial([1, 0, 1], q)
-    pt1 = [3, 10]
-    pt2 = [poly([8, 0]), poly([0, 1])]  # twist
+    G1 = [3, 10]
+    G2 = [poly([8, 0]), poly([0, 1])]  # twist
+    # psi_inv(x, y) -> (−x, iy)
+    assert G2[0] * (-1) == poly(G1[0])
+    assert G2[1] * poly([0, 1]) == poly([G1[1], 0])
+    # psi(x, y) -> (−x, -iy)
+    assert G1[0] * (-1) % q == G2[0]
+    assert G1[1] * -poly([0, 1]) == G2[1]
 
+    # Elliptic Curves Number Theory and Cryptography Second Edition
+    # p45
+    # Arithmetic of EC-Silverman
+    # p103
+    # y^2 = x^3 + Ax + B
+    # x1 = u^2x, y1=u^3y <-> x1/u^2 = x, y1/u^3 = y
+    # y1^2 = x1^3 + A1x^1 + B1
+    # A1 = u^4A, B1 = u^6B
     # x=w=[0,1], x2=w2=[0,1]*[0,1]=[-1,0]
-    # E' -> E,  (x/w2, y/w3)
-    assert pt2[0] * (-1) == poly(pt1[0])  # x/w2
-    assert pt2[1] / -poly([0, 1]) == poly([pt1[1], 0])  # y/w3
-    # E -> E' (w2x, w3y)
-    assert pt1[0] * (-1) % q == pt2[0]  # w2x
-    assert pt1[1] * -poly([0, 1]) == pt2[1]  # w3y
+    # E' -> E,  (x1/u^2,y1/u^3)  1/u^2=-1 => [-1, 0u],  1/u^3=1/-u => 1 /[0,-1u]
+    assert G2[0] * (-1) == poly(G1[0])  # x1/u^2
+    assert G2[1] / poly([0, -1]) == poly([G1[1], 0])  # y1/u^3
+
+    # E -> E' (u^2x, u^3y)  u^2=-1 => [-1, 0u], u^3=u*u^2=-u => [0,-1u]
+    assert G1[0] * (-1) % q == G2[0]  # u^2x
+    assert G1[1] * poly([0, -1]) == G2[1]  # u^3y
 
 
 def p62():
@@ -589,7 +627,7 @@ def p62():
     print('')
 
     q = 103
-    ec1 = EC([-72 * 2, 0, 0, 1])  # y2=x3+72w6, w6+2=0 w6= -2
+    ec1 = EC([-72 * 2, 0, 0, 1])  # y^2=x^3+72u^6, u^6+2=0 u^6= -2
     # TODO EC([72*2*poly([-1,0,0,0,0,0]), 0, 0, 1 ]) y2=x3+72*2poly([-1,0,0,0,0,0])
     points = find_points(ec1, q)
     # print('E\',points : ', points)
@@ -611,7 +649,7 @@ def p62():
         print(npt, end=' => ')
         print(npt.x / poly([0, 0, 1, 0, 0, 0]), npt.y / poly([0, 0, 0, 1, 0, 0]))
 
-    print('\ndistortion')
+    print('\ndistortion psi')
     pt = PT(poly([0, 0, 0, 0, 35, 0]), poly([0, 0, 0, 42, 0, 0]))
     assert ec.is_on_curve(pt)
     for i in range(1, 1000):
@@ -619,14 +657,43 @@ def p62():
         if npt is None:
             break
         print(npt)
-        # x2=w2=[0,0,1,0,0,0], x3=w3=[0,0,0,1,0,0],
-        # E -> E' (w2x, w3y)
+        # E -> E' (u^2x, u^3y)  u^2 => [0,0,1u^2,0,0,0], u^3 => [0,0,0,1u^3,0,0]
         x_1 = npt.x * poly([0, 0, 1, 0, 0, 0])
         y_1 = npt.y * poly([0, 0, 0, 1, 0, 0])
         print('E\' ', x_1, y_1)
-        # E' -> E,  (x/w2, y/w3)
+        # E' -> E (x1/u^2,y1/u^3)
         print('E  ', x_1.val_coefs[0] / poly([0, 0, 1, 0, 0, 0]), y_1.val_coefs[0] / poly([0, 0, 0, 1, 0, 0]))
     # not use b in calculating mul,add in y2=x3+ax+b
+
+
+def p68():
+    print(inspect.stack()[0][3], '>>>>>')
+    ec = EC([6, 17, 0, 1])
+    q = 23
+    f = Field(q)
+
+    P = PT(f(10), f(7))
+    P2 = ec.mul(P, 2);
+    P3 = ec.mul(P, 3);
+    P4 = ec.mul(P, 4);
+    y_p = P.y
+    x_p = P.x
+    # m2 tangent
+    s = ec.slope(P, P)
+    print('m=2, 2(P) - ([2]P) - (O), tangent line')
+    print(f'f2,p = (y + {-s}x + {-y_p + s * x_p} / x + {-P2.x})')  # y -y_p -s(x-x_p)  / x - ([2]x_p)
+    s = ec.slope(P2, P)
+    l_v = f'y + {-s}x + {-y_p + s * x_p} / x + {-P3.x} '
+    print(f'f3,p = f2,p * ({l_v})')
+    s = ec.slope(P3, P)
+    l_v = f'y + {-s}x + {-y_p + s * x_p} / x + {-P4.x} '
+    print(f'f4,p = f3,p * ({l_v})')
+    l_v = f'x + {-P.x}'  # x = P.x
+    print(f'f5,p = f5,p * ({l_v})')
+
+    x, y = P.x, P.y
+    print(x, y)
+    print((x + 22) * y + 5 * x ** 2 + 3 * x + 5)
 
 
 def p69():
@@ -637,13 +704,103 @@ def p69():
     poly = FiniteMonoPolynomial([1, 0, 1], q)
 
     P = PT(f(2), f(11))
+    # print(ec.mul(P, 3))
     Q = PT(poly([21, 0]), poly([0, 12]))
+    # print(ec.mul(Q, 3))
     S = PT(poly([18, 10]), poly([13, 13]))
+    R = PT(poly([0, 17]), poly([21, 2]))
+
+    Q_S = ec.add(Q, S)
+    P_R = ec.add(P, R)
+    print(Q_S, P_R)
+
+    # fr,P
+    y_p = P.y
+    x_p = P.x
+    s = ec.slope(P, P)
+    print(f'fr,P = y + {-s}x + {-y_p + s * x_p} ')  # y -y_p -s(x-x_p)
+    s = ec.slope(P, R)
+    print(f'lP,R= y + {-s}x + {-y_p + s * x_p} ')
+    print(f'vP+R = x + {-P_R.x} ')
+
+    # fr,Q
+    y_p = Q.y
+    x_p = Q.x
+    s = ec.slope(Q, Q)
+    print(f'gr,Q = y + {-s}x + {-y_p + s * x_p}')  # y -y_p -s(x-x_p)
+    s = ec.slope(Q, S)
+    print(f'lQ,S= y + {-s}x + {-y_p + s * x_p} ')
+    print(f'fQ+S = x + {-Q_S.x} ')
+
+    def _f(x, y):
+        f = y + poly([11, 0]) * x + poly([13, 0])
+        l = y + poly([10, 17]) * x + poly([15, 12])
+        v = x + poly([7, 22])
+        return f / (l / v) ** 3
+
+    def _g(x, y):
+        g = y + poly([0, 11]) * x + poly([0, 10])
+        l = y + poly([22, 20]) * x + poly([21, 5])
+        v = x + poly([1, 4])
+        return g / (l / v) ** 3
+
+    def _w():
+        return (_f(Q_S.x, Q_S.y) * _g(R.x, R.y)) / (_f(S.x, S.y) * _g(P_R.x, P_R.y))
+
+    print('w_r(P,Q) : ', _w())
+
     assert ec.weil_pairing(P, Q, S, 3) == [11, 15]
     assert ec.weil_pairing(ec.mul(P, 2), Q, S, 3) == [11, 8]
     assert ec.weil_pairing(P, ec.mul(Q, 2), S, 3) == [11, 8]
     # R = PT(poly([0, 17]), poly([21, 2]))
     # print(ec.weil_pairing2(P, Q, S, R, 3))
+
+    # case [2]P
+    P = PT(f(2), f(11))
+    P = ec.mul(P, 2)
+    Q = PT(poly([21, 0]), poly([0, 12]))
+    S = PT(poly([18, 10]), poly([13, 13]))
+    R = PT(poly([0, 17]), poly([21, 2]))
+
+    Q_S = ec.add(Q, S)
+    P_R = ec.add(P, R)
+    print(Q_S, P_R)
+
+    # fr,P
+    y_p = P.y
+    x_p = P.x
+    s = ec.slope(P, P)
+    print(f'fr,P = y + {-s}x + {-y_p + s * x_p} ')  # y -y_p -s(x-x_p)
+    s = ec.slope(P, R)
+    print(f'lP,R= y + {-s}x + {-y_p + s * x_p} ')
+    print(f'vP+R = x + {-P_R.x} ')
+
+    # fr,Q
+    y_p = Q.y
+    x_p = Q.x
+    s = ec.slope(Q, Q)
+    print(f'gr,Q = y + {-s}x + {-y_p + s * x_p}')  # y -y_p -s(x-x_p)
+    s = ec.slope(Q, S)
+    print(f'lQ,S= y + {-s}x + {-y_p + s * x_p} ')
+    print(f'fQ+S = x + {-Q_S.x} ')
+
+    # When P changed [2]P,  _f' coefficients changed
+    def _f(x, y):
+        f = y + poly([12, 0]) * x + poly([10, 0])
+        l = y + poly([18, 16]) * x + poly([21, 14])
+        v = x + poly([3, 16])
+        return f / (l / v) ** 3
+
+    def _g(x, y):
+        g = y + poly([0, 11]) * x + poly([0, 10])
+        l = y + poly([22, 20]) * x + poly([21, 5])
+        v = x + poly([1, 4])
+        return g / (l / v) ** 3
+
+    def _w():
+        return (_f(Q_S.x, Q_S.y) * _g(R.x, R.y)) / (_f(S.x, S.y) * _g(P_R.x, P_R.y))
+
+    print('w_r([2]P,Q) : ', _w())
 
 
 def p73():
@@ -735,7 +892,7 @@ def p88():
     # print('rho : ', rho)
 
 
-p57()
+p69()
 
 # TODO p32
 '''
