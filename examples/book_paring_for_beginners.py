@@ -747,13 +747,7 @@ def p69():
     def _w():
         return (_f(Q_S.x, Q_S.y) * _g(R.x, R.y)) / (_f(S.x, S.y) * _g(P_R.x, P_R.y))
 
-    print('w_r(P,Q) : ', _w())
-
-    assert ec.weil_pairing(P, Q, S, 3) == [11, 15]
-    assert ec.weil_pairing(ec.mul(P, 2), Q, S, 3) == [11, 8]
-    assert ec.weil_pairing(P, ec.mul(Q, 2), S, 3) == [11, 8]
-    # R = PT(poly([0, 17]), poly([21, 2]))
-    # print(ec.weil_pairing2(P, Q, S, R, 3))
+    print('w_3(P,Q) : ', _w())
 
     # case [2]P
     P = PT(f(2), f(11))
@@ -800,7 +794,84 @@ def p69():
     def _w():
         return (_f(Q_S.x, Q_S.y) * _g(R.x, R.y)) / (_f(S.x, S.y) * _g(P_R.x, P_R.y))
 
-    print('w_r([2]P,Q) : ', _w())
+    print('w_3([2]P,Q) : ', _w())
+
+    # miller
+    P = PT(f(2), f(11))
+    Q = PT(poly([21, 0]), poly([0, 12]))
+    # assert ec.weil_pairing(P, Q, S, 3) == [11, 15]
+    # assert ec.weil_pairing(ec.mul(P, 2), Q, S, 3) == [11, 8]
+    # assert ec.weil_pairing(P, ec.mul(Q, 2), S, 3) == [11, 8]
+    assert ec.weil_pairing_debug(P, Q, S, -S, 3) == [11, 15]
+    assert ec.weil_pairing_debug(ec.mul(P, 2), Q, S, -S, 3) == [11, 8]
+    assert ec.weil_pairing_debug(P, ec.mul(Q, 2), S, -S, 3) == [11, 8]
+
+
+def p71():
+    print(inspect.stack()[0][3], '>>>>>')
+    ec = EC([-3, 0, 0, 1])
+    q = 5
+    points = find_points(ec, q)
+    order = len(points)
+    print('E points : ', points)
+    print(f'order = {order} = {get_prime_factors(order)}')
+    print('r = ', end='')
+    print('')
+    for e in points:
+        print(e, ec.mul(e, 3))
+
+    poly = FiniteMonoPolynomial([2, 0, 1], q)
+
+    g1 = coset = [None,
+                  PT(poly([4, 3]), poly([0, 0])),
+                  PT(poly([4, 2]), poly([0, 0])),
+                  PT(poly([2, 0]), poly([0, 0]))]
+    P_1 = PT(poly([0, 2]), poly([3, 4]))
+    P_2 = PT(poly([4, 0]), poly([1, 0]))
+    P_3 = PT(poly([3, 0]), poly([2, 0]))
+    P_4 = PT(poly([0, 3]), poly([3, 1]))
+    g2 = [P_3, P_2, P_1, P_4, ]
+    g3 = [PT(poly([2, 1]), poly([0, 1])),
+          PT(poly([1, 0]), poly([0, 1])),
+          PT(poly([0, 0]), poly([0, 3])),
+          PT(poly([2, 4]), poly([0, 1]))]
+    g4 = [PT(poly([1, 2]), poly([2, 0])),
+          PT(poly([1, 1]), poly([3, 1])),
+          PT(poly([4, 4]), poly([3, 4])),
+          PT(poly([3, 1]), poly([1, 0]))]
+    # rE = {[3]P : P ∈ E(Fq2)}
+    print('rE = {[3]P : P ∈ E(Fq2)}')
+    for e in g1:
+        print(ec.mul(e, 3))
+    for e in g2:
+        print(ec.mul(e, 3))
+    print('......')
+
+    # g2_e + coset
+    print('g2_e + coset')
+    for e in coset:
+        # g2_e
+        print(ec.add(e, P_1))
+    print('......')
+
+    # P1-P1, P1-P2, P1-P3, P1-P4
+    print('P1-P1, P1-P2, P1-P3, P1-P4')
+    for e in g2:
+        print(ec.sub(P_1, e))
+
+    print('r-torsion')
+    for e in g1:
+        if ec.mul(e, 3) is None:
+            print(e)
+    for e in g2:
+        if ec.mul(e, 3) is None:
+            print(e)
+    for e in g3:
+        if ec.mul(e, 3) is None:
+            print(e)
+    for e in g4:
+        if ec.mul(e, 3) is None:
+            print(e)
 
 
 def p73():
@@ -813,16 +884,60 @@ def p73():
     Q = PT(poly([1, 1]), poly([2, 4]))
     R = PT(poly([0, 2]), poly([2, 1]))
     Q_R = ec.add(Q, R)
-    assert Q_R == PT(poly([1, 3]), poly([2, 0]))
+
+    # f
+    y_p = P.y
+    x_p = P.x
+    s = ec.slope(P, P)
+    print(f'fr,P = y + {-s}x + {-y_p + s * x_p}')
+
+    def _f(x, y):
+        f = y + poly([2, 0]) * x + poly([2, 0])
+        return f
+
+    def _t():
+        return _f(Q_R.x, Q_R.y) / _f(R.x, R.y)
+
+    print('t_3(P,Q) : ', _t())
+
+    # case [2]Q
+    Q = ec.mul(Q, 2)
+    Q_R = ec.add(Q, R)
+    # f
+    y_p = P.y
+    x_p = P.x
+    s = ec.slope(P, P)
+    print(f'fr,P = y + {-s}x + {-y_p + s * x_p}')
+    print('t_3(P,[2]Q) : ', _t())
+
+    # case [2]P
+    P = PT(f(3), f(2))
+    Q = PT(poly([1, 1]), poly([2, 4]))
+    R = PT(poly([0, 2]), poly([2, 1]))
+    P2 = ec.mul(P, 2)
+    Q_R = ec.add(Q, R)
+    # f
+    y_p = P2.y
+    x_p = P2.x
+    s = ec.slope(P2, P2)
+    print(f'fr,2P = y + {-s}x + {-y_p + s * x_p}')
+
+    def _f(x, y):
+        f = y + poly([3, 0]) * x + poly([3, 0])
+        return f
+
+    print('t_3([2]P,Q) : ', _t())
+
+    # miller
+    print('miller....')
     m = 3
     ms = [int(x) for x in bin(m)[2:]][::-1]
     assert ec.miller(P, Q_R, ms) == [1, 1]
     assert ec.miller(P, R, ms) == [4, 0]
-    assert ec.miller(P, Q_R, ms) / ec.miller(P, R, ms) == [4, 4]
+    assert ec.miller(P, Q_R, ms) / ec.miller_debug(P, R, ms) == [4, 4]
     assert ec.tate_pairing(P, Q, R, m) == [4, 4]
-    # DQ = ([2]Q) − (Q)
     assert ec.tate_pairing(P, ec.mul(Q, 2), R, m) == [4, 2]
-    assert ec.tate_pairing(ec.mul(P, 2), Q, R, m) == [2, 3]
+    assert ec.tate_pairing_debug(ec.mul(P, 2), Q, R, m) == [2, 3]
 
     # (q^k-1)/r
     e = (q ** 2 - 1) // 3
@@ -830,26 +945,47 @@ def p73():
     assert ec.tate_pairing(P, Q, R, m) ** 2 ** e == poly([2, 4])
     assert ec.tate_pairing(P, ec.mul(Q, 2), R, m) ** e == poly([2, 4])
     assert ec.tate_pairing(ec.mul(P, 2), Q, R, m) ** e == poly([2, 4])
+    assert ec.tate_reduced_pairing(ec.mul(P, 2), Q, R, m) == poly([2, 4])
+
+
+def p74():
+    print(inspect.stack()[0][3], '>>>>>')
+    ec = EC([3, 14, 0, 1])
+    q = 19
+    poly = FiniteMonoPolynomial([1, 0, 1], q)
+    f = Field(q)
+    P = PT(f(17), f(9))
+    Q = PT(poly([16, 0]), poly([0, 16]))
+
+    r = 5
+    # s = 2Q or Q
+    print(ec.tate_pairing(P, Q, ec.mul(Q, 2), r) ** 4)
+    assert ec.tate_reduced_pairing(P, Q, ec.mul(Q, 1), r) ** 4 \
+           == ec.tate_reduced_pairing(ec.mul(P, 4), Q, ec.mul(Q, 2), r) \
+           == ec.tate_reduced_pairing(P, ec.mul(Q, 4), ec.mul(Q, 2), r) \
+           == ec.tate_reduced_pairing(ec.mul(P, 2), ec.mul(Q, 2), ec.mul(Q, 2), r)
 
 
 def p78():
     print(inspect.stack()[0][3], '>>>>>')
     ec = EC([15, 21, 0, 1])
     q = 47
-    poly = FiniteMonoPolynomial([5, 0, -4, 0, 1], q)
     f = Field(q)
     P = PT(f(45), f(23))
+    print(frob_end_pi(P.x, q, 1), frob_end_pi(P.y, q, 1))
+
+    poly = FiniteMonoPolynomial([5, 0, -4, 0, 1], q)
     Q = PT(poly([29, 0, 31, 0]), poly([0, 11, 0, 35]))
-    # Q=R
-    R = PT(poly([29, 0, 31, 0]), poly([0, 11, 0, 35]))
+    # print(ec.tr(Q, q, poly.deg))
+    # print(ec.sub(ec.mul(Q,17), ec.tr(Q, q, poly.deg)))
 
-    m = 17
-    ms = [int(x) for x in bin(m)[2:]][::-1]
-    assert ec.tate_pairing(P, Q, R, m) == [22, 10, 6, 17]
-    # 시간많이걸림
-    # Tr
-    assert ec.tate_pairing(P, Q, R, m) ** 287040 == [39, 45, 43, 33]
-
+    r = m = 17
+    # (Q) − (O) => DQ = ([2]Q) − (Q)
+    print(ec.tate_pairing_debug(P, Q, Q, m))
+    # (Q) − (O) => DQ = ([3,4,5,...]Q) − (Q), different ressult
+    for i in range(14):
+        print(i+2, ec.tate_pairing(P, Q, ec.mul(Q, i+2), m))
+    assert ec.tate_pairing(P, Q, Q, m) ** 287040 == [39, 45, 43, 33]
 
 def p82():
     print(inspect.stack()[0][3], '>>>>>')
@@ -892,7 +1028,7 @@ def p88():
     # print('rho : ', rho)
 
 
-p69()
+p78()
 
 # TODO p32
 '''
