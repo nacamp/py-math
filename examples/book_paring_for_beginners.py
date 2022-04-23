@@ -981,11 +981,13 @@ def p78():
 
     r = m = 17
     # (Q) − (O) => DQ = ([2]Q) − (Q)
-    print(ec.tate_pairing_debug(P, Q, Q, m))
-    # (Q) − (O) => DQ = ([3,4,5,...]Q) − (Q), different ressult
+    print(ec.tate_pairing_debug2(P, Q, Q, m))
+    # (Q) − (O) => DQ = ([3,4,5,...]Q) − (Q), different result
     for i in range(14):
-        print(i+2, ec.tate_pairing(P, Q, ec.mul(Q, i+2), m))
+        print(i + 2, ec.tate_pairing(P, Q, ec.mul(Q, i + 2), m))
+    assert ec.tate_reduced_pairing(P, Q, Q, m, 4) == [39, 45, 43, 33]
     assert ec.tate_pairing(P, Q, Q, m) ** 287040 == [39, 45, 43, 33]
+
 
 def p82():
     print(inspect.stack()[0][3], '>>>>>')
@@ -997,7 +999,9 @@ def p82():
     print(r.bit_length())
     k = 9
     assert (q ** k - 1) % r == 0
+    print('F_q^6 order : ', (q ** k - 1).bit_length())
     print('rho : ', math.log10(q) / math.log10(r))
+    print(256 // 2)
 
 
 def p86():
@@ -1012,23 +1016,28 @@ def p86():
     print('rho : ', math.log10(q) / math.log10(r))
 
 
-def p88():
+def p96():
     print(inspect.stack()[0][3], '>>>>>')
-    ec = EC([314159, 0, 0, 1])
-    q = 425708693169757088196017853607835113595127103859429924930531263283244403251872949802982860038531930965867890444658222153407204383584492024637762799391807569669124814253270947366226515064812665901907204494611177526596015257984009814596057160388672298355821309046798841446111721495601835913381835880170934319890420895521320439930666405003725309562669243847766834546592867695533445054256132471093279787853214492986394176521193456205570309658462204234557728373615304193316916440130004424612327
-    r = 57896044618658097711785492504343953926634992332820282019728792003956564820063
-    # assert is_supersingular(ec, q) # overflow
-    print(q.bit_length())
-    print(r.bit_length())
-    print(q.bit_length() - r.bit_length())
-    print('rho : ', math.log10(q) / math.log10(r))
-    # k = 9
-    # assert (q ** k - 1) % r == 0
-    # rho = math.log10(q) / math.log10(r)
-    # print('rho : ', rho)
+    ec = EC([15, 21, 0, 1])
+    q = 47
+    f = Field(q)
+    P = PT(f(45), f(23))
+    print(frob_end_pi(P.x, q, 1), frob_end_pi(P.y, q, 1))
+
+    poly = FiniteMonoPolynomial([5, 0, -4, 0, 1], q)
+    Q = PT(poly([29, 0, 31, 0]), poly([0, 11, 0, 35]))
+    # print(ec.tr(Q, q, poly.deg))
+    # print(ec.sub(ec.mul(Q,17), ec.tr(Q, q, poly.deg)))
+
+    r = m = 17
+    a = ec.tate_pairing_debug_p96(P, Q, m)
+    print(a)
+    b = ec.tate_pairing_debug(P, Q, ec.mul(Q, 1), m)
+    e = (q ** 4 - 1) // m
+    assert a ** e == b ** e
 
 
-p78()
+p96()
 
 # TODO p32
 '''
