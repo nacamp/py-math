@@ -181,16 +181,77 @@ class EC:
         return (self.miller(p, self.add(q, s), ms) / self.miller(p, s, ms)) / (
                 self.miller(q, self.sub(p, s), ms) / self.miller(q, -s, ms))
 
-    def weil_pairing2(self, p, q, s, r, m):
-        ms = [int(x) for x in bin(m)[2:]][::-1]
-        # fp(q+s)/fp(s)  / fq(p+r)/fq(r)
-        return (self.miller(p, self.add(q, s), ms) / self.miller(p, s, ms)) / (
-                self.miller(q, self.add(p, r), ms) / self.miller(q, r, ms))
-
     def tate_pairing(self, p, q, s, m):
         ms = [int(x) for x in bin(m)[2:]][::-1]
         # fp(q+s)/fp(s)
         return self.miller(p, self.add(q, s), ms) / self.miller(p, s, ms)
+
+    def tate_reduced_pairing(self, p, q, s, m):
+        # (q^k-1)/r
+        e = (p.x.q ** 2 - 1) // m
+        return self.tate_pairing(p, q, s, m)**e
+
+
+    def miller_g_debug(self, p, q, g):
+        # p , q, g = P, R, D_Q
+        s = self.slope(p, q)
+        if s is None:
+            print(f'v = x + {-p.x} ')
+            return g.x - p.x
+        else:
+            l = (g.y - p.y - s * (g.x - p.x))
+            print(f'l= y + {-s}x + {-p.y + s * p.x} ')
+            pq = self.add(p, q)
+            v = (g.x - pq.x)
+            print(f'v= x + {-pq.x} ')
+            assert (g.x + p.x + q.x - s ** 2), v
+            return l / v
+            # return (g.y - p.y - s * (g.x - p.x)) / (g.x + p.x + q.x - s ** 2)
+            # self.add: l = (p2.y - p1.y) / (p2.x - p1.x) x = l ** 2 - p1.x - p2.x
+
+    # p322 An Introduction to Mathematical Cryptography : Jeffrey Hoffstein, Jill Pipher,  Joseph H. Silverman
+    def miller_debug(self, p, g, ms):
+        # g = D_q
+        t = p  # R <- p
+        f = 1  # f <- 1
+        for i in range(len(ms) - 2, -1, -1):
+            print('i:', i, ' r[i]:', ms[i])
+            f = f ** 2 * self.miller_g_debug(t, t, g)
+            t = self.mul(t, 2)  # 2R
+
+            if ms[i] == 1:
+                f = f * self.miller_g_debug(t, p, g)
+                t = self.add(t, p)  # R+P
+
+        return f
+
+    def weil_pairing_debug(self, p, q, s, r, m):
+        print('weil_pairing_debug>>>')
+        ms = [int(x) for x in bin(m)[2:]][::-1]
+        print('m : ', m, ' ms : ', ms)
+        # r = -s;
+        # fp(q+s)/fp(s)  / fq(p+r)/fq(r)
+        print('miller_debug(p, self.add(q, s), ms)>>')
+        p_qs = self.miller_debug(p, self.add(q, s), ms)
+        print('miller_debug(p, s, ms)>>')
+        p_s = self.miller_debug(p, s, ms)
+        print('miller_debug(q, self.add(p, r), ms)>>')
+        q_pr = self.miller_debug(q, self.add(p, r), ms)
+        print('miller_debug(q, r, ms)>>')
+        q_r = self.miller_debug(q, r, ms)
+        return (p_qs / p_s) / (q_pr / q_r)
+
+    def tate_pairing_debug(self, p, q, s, m):
+        print('tate_pairing_debug>>>')
+        ms = [int(x) for x in bin(m)[2:]][::-1]
+        print('m : ', m, ' ms : ', ms)
+        # fp(q+s)/fp(s)
+        print('miller(p, self.add(q, s), ms)>>')
+        p_qs = self.miller_debug(p, self.add(q, s), ms)
+        print('miller_debug(q, s, ms)>>')
+        p_s = self.miller_debug(p, s, ms)
+        return p_qs / p_s
+
 
     def is_on_curve(self, p1):
         if p1 is None:
