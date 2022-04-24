@@ -209,24 +209,6 @@ class EC:
             # return (g.y - p.y - s * (g.x - p.x)) / (g.x + p.x + q.x - s ** 2)
             # self.add: l = (p2.y - p1.y) / (p2.x - p1.x) x = l ** 2 - p1.x - p2.x
 
-    def miller_g_debug_p96(self, p, q, g):
-        # p , q, g = P, R, D_Q
-        s = self.slope(p, q)
-        if s is None:
-            print(f'v = x + {-p.x} ')
-            return g.x - p.x
-        else:
-            l = (g.y - p.y - s * (g.x - p.x))
-            print(f'l= y + {-s}x + {-p.y + s * p.x} ')
-            pq = self.add(p, q)
-            v = (g.x - pq.x)
-            print(f'v= x + {-pq.x} ')
-            assert (g.x + p.x + q.x - s ** 2), v
-            print('l:', l, 'v:',  v, 'l/v:', l / v)
-            return l / v
-            # return (g.y - p.y - s * (g.x - p.x)) / (g.x + p.x + q.x - s ** 2)
-            # self.add: l = (p2.y - p1.y) / (p2.x - p1.x) x = l ** 2 - p1.x - p2.x
-
     # p322 An Introduction to Mathematical Cryptography : Jeffrey Hoffstein, Jill Pipher,  Joseph H. Silverman
     def miller_debug(self, p, g, ms):
         # g = D_q
@@ -268,25 +250,6 @@ class EC:
                 t = self.add(t, p)  # R+P
         return f1 / f2
 
-    def miller_debug_p96(self, p, g1, g2, ms):
-        # g = D_q
-        t = p  # R <- p
-        f1 = 1  # f <- 1
-        f2 = 1  # f <- 1
-        for i in range(len(ms) - 2, -1, -1):
-            print('i:', i, ' r[i]:', ms[i])
-            _f1 = self.miller_g_debug_p96(t, t, g1)
-            f1 = f1 ** 2 * _f1
-            t = self.mul(t, 2)  # 2R
-            print('R:', t, 'f:', f1)
-
-            if ms[i] == 1:
-                _f1 = self.miller_g_debug_p96(t, p, g1)
-                f1 = f1 * _f1
-                print('R:', t, 'f:', f1)
-                t = self.add(t, p)  # R+P
-        return f1
-
     def weil_pairing_debug(self, p, q, s, r, m):
         print('weil_pairing_debug>>>')
         ms = [int(x) for x in bin(m)[2:]][::-1]
@@ -324,11 +287,130 @@ class EC:
 
     def tate_pairing_debug_p96(self, p, q, m):
         print('tate_pairing_debug>>>')
+
+        def _miller_g(p, q, g):
+            # p , q, g = P, R, D_Q
+            s = self.slope(p, q)
+            if s is None:
+                print(f'v = x + {-p.x} ')
+                return g.x - p.x
+            else:
+                l = (g.y - p.y - s * (g.x - p.x))
+                print(f'l= y + {-s}x + {-p.y + s * p.x} ')
+                pq = self.add(p, q)
+                v = (g.x - pq.x)
+                print(f'v= x + {-pq.x} ')
+                assert (g.x + p.x + q.x - s ** 2), v
+                print('l:', l, 'v:', v, 'l/v:', l / v)
+                return l / v
+
+        def _miller(p, g1, ms):
+            # g = D_q
+            t = p  # R <- p
+            f1 = 1  # f <- 1
+            for i in range(len(ms) - 2, -1, -1):
+                print('i:', i, ' r[i]:', ms[i])
+                _f1 = _miller_g(t, t, g1)
+                f1 = f1 ** 2 * _f1
+                t = self.mul(t, 2)  # 2R
+                print('R:', t, 'f:', f1)
+
+                if ms[i] == 1:
+                    _f1 = _miller_g(t, p, g1)
+                    f1 = f1 * _f1
+                    print('R:', t, 'f:', f1)
+                    t = self.add(t, p)  # R+P
+            return f1
+
         ms = [int(x) for x in bin(m)[2:]][::-1]
         print('m : ', m, ' ms : ', ms)
         # fp(q+s)/fp(s)
         print('miller(p, self.add(q, s), ms)>>')
-        return self.miller_debug_p96(p, q, q, ms)
+        return _miller(p, q, ms)
+
+    def tate_pairing_debug_p97(self, p, q, m):
+        def _miller_g(p, q, g):
+            # p , q, g = P, R, D_Q
+            s = self.slope(p, q)
+            if s is None:
+                print(f'v = x + {-p.x} ')
+                return g.x - p.x
+            else:
+                l = (g.y - p.y - s * (g.x - p.x))
+                print(f'l= y + {-s}x + {-p.y + s * p.x} ')
+                pq = self.add(p, q)
+                v = (g.x - pq.x)
+                print(f'v= x + {-pq.x} ')
+                assert (g.x + p.x + q.x - s ** 2), v
+                print('l:', l)
+                return l
+
+        def _miller(p, g1, g2, ms):
+            # g = D_q
+            t = p  # R <- p
+            f1 = 1  # f <- 1
+            f2 = 1  # f <- 1
+            for i in range(len(ms) - 2, -1, -1):
+                print('i:', i, ' r[i]:', ms[i])
+                _f1 = _miller_g(t, t, g1)
+                f1 = f1 ** 2 * _f1
+                t = self.mul(t, 2)  # 2R
+                print('R:', t, 'f:', f1)
+
+                if ms[i] == 1:
+                    _f1 = _miller_g(t, p, g1)
+                    f1 = f1 * _f1
+                    print('R:', t, 'f:', f1)
+                    t = self.add(t, p)  # R+P
+            return f1
+
+        print('tate_pairing_debug>>>')
+        ms = [int(x) for x in bin(m)[2:]][::-1]
+        print('m : ', m, ' ms : ', ms)
+        # fp(q+s)/fp(s)
+        print('miller(p, self.add(q, s), ms)>>')
+        return _miller(p, q, q, ms)
+
+    def ate_pairing(self, p, q, m):
+        def _miller_g(p, q, g):
+            # p , q, g = P, R, D_Q
+            s = self.slope(p, q)
+            if s is None:
+                print(f'v = x + {-p.x} ')
+                return g.x - p.x
+            else:
+                l = (g.y - p.y - s * (g.x - p.x))
+                print(f'l= y + {-s}x + {-p.y + s * p.x} ')
+                pq = self.add(p, q)
+                v = (g.x - pq.x)
+                print(f'v= x + {-pq.x} ')
+                assert (g.x + p.x + q.x - s ** 2), v
+                print('l:', l)
+                return l
+
+        def _miller(p, g, ms):
+            # g = Q
+            t = g  # R <- Q
+            f = 1  # f <- 1
+            for i in range(len(ms) - 2, -1, -1):
+                print('i:', i, ' r[i]:', ms[i])
+                _f = _miller_g(t, t, p)
+                f = f ** 2 * _f
+                t = self.mul(t, 2)  # 2R
+                print('R:', t, 'f:', f)
+
+                if ms[i] == 1:
+                    _f = _miller_g(t, g, p)
+                    f = f * _f
+                    print('R:', t, 'f:', f)
+                    t = self.add(t, g)  # R+P
+            return f
+
+        print('ate_pairing_debug>>>')
+        ms = [int(x) for x in bin(m)[2:]][::-1]
+        print('m : ', m, ' ms : ', ms)
+        print('miller(p, q, ms)>>')
+        return _miller(p, q, ms)
 
     def is_on_curve(self, p1):
         if p1 is None:
