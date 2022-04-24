@@ -1037,7 +1037,65 @@ def p96():
     assert a ** e == b ** e
 
 
-p96()
+def p97():
+    print(inspect.stack()[0][3], '>>>>>')
+    ec = EC([15, 21, 0, 1])
+    q = 47
+    f = Field(q)
+    P = PT(f(45), f(23))
+    print(frob_end_pi(P.x, q, 1), frob_end_pi(P.y, q, 1))
+
+    poly = FiniteMonoPolynomial([5, 0, -4, 0, 1], q)
+    Q = PT(poly([29, 0, 31, 0]), poly([0, 11, 0, 35]))
+
+    r = m = 17
+    a = ec.tate_pairing_debug_p97(P, Q, m)
+    print(a)
+    b = ec.tate_pairing(P, Q, ec.mul(Q, 1), m)
+    e = (q ** 4 - 1) // m
+    print(a ** e, b ** e)
+    # assert a ** e == b ** e
+
+
+def p106():
+    print(inspect.stack()[0][3], '>>>>>')
+    ec = EC([15, 21, 0, 1])
+    q = 47
+    r = 17
+    k = 4
+    f = Field(q)
+    P = PT(f(45), f(23))
+    print(frob_end_pi(P.x, q, 1), frob_end_pi(P.y, q, 1))
+
+    poly = FiniteMonoPolynomial([5, 0, -4, 0, 1], q)
+    Q = PT(poly([29, 0, 31, 0]), poly([0, 11, 0, 35]))
+
+    # case1: find T
+    # p25
+    # |#E(Fq)−(q+1)|≤2sqrt(q) This offset between #E(Fq) and (q + 1) is called the trace of Frobenius,  t
+    # #E(Fq) = q + 1 − t, |t| ≤ 2sqrt(q)
+    # #E(Fq)=51
+    t = q + 1 - 51
+    print(t % r)
+    # p103
+    # ate pairing, whose loop length is T = t − 1, where t is the trace of the Frobenius endomorphism
+    # p106
+    # if T = t − 1 < 0, then it is fine to take T = |T |
+    T = t - 1
+    print(T)
+
+    # case2: find T
+    qQ = ec.mul(Q, q)
+    for i in range(q - 1):
+        if qQ == ec.mul(Q, i + 1):
+            print(i + 1, ec.mul(Q, i + 1))
+            assert (i + 1) % r == -4 % r
+
+    a = ec.ate_pairing(P, Q, abs(T))
+    print(a)
+
+
+p106()
 
 # TODO p32
 '''
